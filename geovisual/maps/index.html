@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<link href='http://fonts.googleapis.com/css?family=Yanone+Kaffeesatz:400,300' rel='stylesheet' type='text/css'>
+		<link href='http://fonts.googleapis.com/css?family=Lobster' rel='stylesheet' type='text/css'>
+		<title>Vida y Muerte en CDMX | The Audrics</title>
+		<script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=true"></script>
+		<script type="text/javascript" src="http://mbostock.github.com/d3/d3.js?1.29.1"></script>	
+		<script src="http://code.jquery.com/jquery-1.9.1.js"></script>
+		<!-- A little bit o' jQuery to handle the link styles -->
+		<script type="text/javascript">
+			$(function() {
+				$('#link_1').addClass('active');
+			});
+				$(function () {
+					$("#filter a").click(function (e) {
+						e.preventDefault();
+					$("#filter a").addClass("active").not(this).removeClass("active");
+				});
+			});
+		</script>
+		<style type="text/css">	
+			html, body, #map {
+			  width: 100%;
+			  height: 100%;
+			  margin: 0;
+			  padding: 0;
+
+			}
+			.stations, .stations svg {
+			  position: absolute;
+			}
+			.stations svg {
+			  font: 0px sans-serif;
+			  text-anchor: middle;
+
+			}
+			.stations circle {
+			  stroke: #666;
+			  stroke-width: 0.5px;
+			}
+			svg.marker {width:60px; height:60px; opacity: 0.6;}
+			#filter {font-family: sans-serif, arial; text-transform: uppercase; text-align: center;}
+			#filter p {display:inline-block; margin: 10px;  font-family: 'Yanone Kaffeesatz', sans-serif; font-weight: 400;}
+			#filter p b {font-size: 30px; font-weight: 400; }
+			#filter a {text-decoration: none; font-size: 12pt; }
+			#filter a:link { color:#9a9a9a; }
+   			#filter a:visited { color:#9a9a9a;}
+			#filter a:hover { color:#21759B; }	
+			.active { color: #333333 !important;}
+			#pie{ height: 60px; width: 100%; bottom: 0px; z-index: 99; text-align: center; position: absolute; background-color: #EEE; font-family: 'Yanone Kaffeesatz', sans-serif;}
+			#pie p{line-height: 5px; font-size: 30px; font-weight: 400; color: #000}
+			#pie p span{color: #FF0066}
+			#pie p b{font-family: 'Lobster', cursive;color: #000}
+
+
+
+
+		</style>
+	</head>
+	<body>
+		<div id="filter">
+		<p><b>Vida y Muerte en CDMX</b></p><br>
+		<p class="dataset-swap-original"><a href="#" id="link_1" >NACIMIENTOS</a></p>
+		<p class="dataset-swap"><a href="#" id="link_2">DEFUNCIONES</a></p>
+		</div>
+		<!-- D3 SVG container goes here -->
+		<div id="map"></div>
+		<script type="text/javascript">	
+
+			//Adding a color scale that takes the domain of station boardings and outputs to a range of sequential colors
+			var colorScale = d3.scale.quantize().domain([50000,1000000]).range(['#FFFFB2', '#FED976', '#FEB24C', '#FD8D3C', '#FC4E2A', '#E31A1C', '#B10026']);
+
+			// Create the Google Map…
+			var map = new google.maps.Map(d3.select("#map").node(), {
+			  zoom: 11,
+			  center: new google.maps.LatLng(19.3200988,-99.1521845),
+			  mapTypeId: google.maps.MapTypeId.ROADMAP
+			});
+
+			// estilos del mapa
+			var styles = [
+  {
+    stylers: [
+      { hue: "#890000" },
+      { saturation: 60 }
+    ]
+  },{
+    featureType: "road",
+    elementType: "geometry",
+    stylers: [
+      { lightness: 100 },
+      { visibility: "simplified" }
+    ]
+  },{
+    featureType: "road",
+    elementType: "labels",
+    stylers: [
+      { visibility: "off" }
+    ]
+  },
+  {
+      featureType: 'road.arterial',
+      elementType: 'all',
+      stylers: [
+        { hue: '#2200ff' },
+        { lightness: -40 },
+        { visibility: 'off' },
+        { saturation: 30 }
+      ]
+    },
+    {
+      featureType: 'administrative.locality',
+      elementType: 'labels',
+      stylers: [
+        { hue: '#0022ff' },
+        { saturation: 50 },
+        { lightness: -10 },
+        { visibility: 'off' },
+        { gamma: 0.90 }
+      ]
+    }
+];
+
+map.setOptions({styles: styles});	
+
+		
+
+
+
+			// Load the station data. When the data comes back, create an overlay.
+			d3.json("data/stations.json", function(data) {
+			  var overlay = new google.maps.OverlayView();
+
+			  // Add the container when the overlay is added to the map.
+			  overlay.onAdd = function() {
+			    var layer = d3.select(this.getPanes().overlayLayer).append("div")
+			        .attr("class", "stations");
+
+			    // Draw each marker as a separate SVG element.
+			    // We could use a single SVG, but what size would it have?
+			    overlay.draw = function() {
+			      var projection = this.getProjection(),
+			          padding = 30;
+
+			      var marker = layer.selectAll("svg")
+			          .data(d3.entries(data))
+			          .each(transform) // update existing markers
+			          .enter().append("svg:svg")
+			          .each(transform)
+			          .attr("class", "marker");
+
+			      // Add a circle.
+			      marker.append("svg:circle")
+			      	  .transition()
+			      	  .delay(1000)
+			      // Size circles as a function of # of boardings (3rd value in json key)
+			          .attr("r", function(d){
+			          		return Math.sqrt(parseInt(d.value[3]) * 0.09945 + padding);
+			          })
+			          .attr("cx", padding)
+			          .attr("cy", padding)
+			          .style("fill", function(d) {
+			          		//get data value
+			          		var colorValue = d.value[3]
+			          		if (colorValue) {
+			          			return colorScale(colorValue);
+			          		} else {
+			          			return "#ccc";
+			          		}
+			          });
+
+			      // Add a label.
+			     marker.append("svg:text")
+			         .transition()
+			         .delay(1000)
+			         .attr("x", padding - 3)
+			         .attr("y", padding)
+			         .attr("dy", ".45em")
+			         .attr("dx", ".4em")
+			         .text(function(d) { return d.value[5]; });
+
+			      function transform(d) {
+			        d = new google.maps.LatLng(d.value[1], d.value[0]);
+			        d = projection.fromLatLngToDivPixel(d);
+			        return d3.select(this)
+			            .style("left", (d.x - padding) + "px")
+			            .style("top", (d.y - padding) + "px");
+			      }
+			    };
+			  };
+
+			  // Bind our overlay to the map…
+			  overlay.setMap(map);
+
+			});
+
+			    //On click, change dataset
+				d3.select(".dataset-swap")
+				.on("click", function(){
+					
+					// Load the station data and create an overlay just like the first time
+					d3.json("data/stations.json", function(data) {
+					  var overlay = new google.maps.OverlayView();
+
+					  // Add the container again when the overlay is added to the map.
+					  overlay.onAdd = function() {
+					    var layer = d3.select(this.getPanes().overlayLayer).append("div")
+					        .attr("class", "stations");
+
+					    overlay.draw = function() {
+					      var projection = this.getProjection(),
+					          padding = 30;
+
+					      var marker = layer.selectAll("svg")
+					          .data(d3.entries(data))
+					          .each(transform) 
+					          .enter().append("svg:svg")
+					          .each(transform)
+					          .attr("class", "marker");
+
+					      // Select all existing circles and update them
+					      d3.selectAll("circle")
+					      	  //Data must be called again locally to rebind
+					          .data(d3.entries(data))
+					      	  .transition()
+					          .attr("r", function(d){
+					          		return Math.sqrt(parseInt(d.value[7]) * 0.09945 + padding);
+					          })
+					          .attr("cx", padding)
+					          .attr("cy", padding)
+					          .style("fill", function(d) {
+					          		//get data value
+					          		var colorValue = d.value[7]
+					          		if (colorValue) {
+					          			return colorScale(colorValue);
+					          		} else {
+					          			return "#ccc";
+					          		}
+					          });
+
+					      // And then update the labels
+					     d3.selectAll("text")
+					     	 .transition()
+					         .attr("x", padding - 3)
+					         .attr("y", padding)
+					         .attr("dy", ".45em")
+					         .attr("dx", ".4em")
+					         .text(function(d) { return d.value[9]; });
+
+					      function transform(d) {
+					        d = new google.maps.LatLng(d.value[1], d.value[0]);
+					        d = projection.fromLatLngToDivPixel(d);
+					        return d3.select(this)
+					            .style("left", (d.x - padding) + "px")
+					            .style("top", (d.y - padding) + "px");
+					      }
+					    };
+					  };
+					  // rebind overlay to the map…
+					  overlay.setMap(map);
+					});
+				});
+
+				//On click, change dataset
+				d3.select(".dataset-swap-original")
+				.on("click", function(){
+					
+					// Load the station data and create an overlay just like the first time
+					d3.json("data/stations.json", function(data) {
+					  var overlay = new google.maps.OverlayView();
+
+					  // Add the container again when the overlay is added to the map.
+					  overlay.onAdd = function() {
+					    var layer = d3.select(this.getPanes().overlayLayer).append("div")
+					        .attr("class", "stations");
+
+					    overlay.draw = function() {
+					      var projection = this.getProjection(),
+					          padding = 30;
+
+					      var marker = layer.selectAll("svg")
+					          .data(d3.entries(data))
+					          .each(transform) 
+					          .enter().append("svg:svg")
+					          .each(transform)
+					          .attr("class", "marker");
+
+					      // Select all existing circles and update them
+					      d3.selectAll("circle")
+					      	  //Data must be called again locally to rebind
+					          .data(d3.entries(data))
+					      	  .transition()
+					          .attr("r", function(d){
+					          		return Math.sqrt(parseInt(d.value[3]) * 0.09945 + padding);
+					          })
+					          .attr("cx", padding)
+					          .attr("cy", padding)
+					          .style("fill", function(d) {
+					          		//get data value
+					          		var colorValue = d.value[3]
+					          		if (colorValue) {
+					          			return colorScale(colorValue);
+					          		} else {
+					          			return "#ccc";
+					          		}
+					          });
+
+					      // And then update the labels
+					     d3.selectAll("text")
+					     	 .transition()
+					         .attr("x", padding - 3)
+					         .attr("y", padding)
+					         .attr("dy", ".45em")
+					         .attr("dx", ".4em")
+					         .text(function(d) { return d.value[5]; });
+
+					      function transform(d) {
+					        d = new google.maps.LatLng(d.value[1], d.value[0]);
+					        d = projection.fromLatLngToDivPixel(d);
+					        return d3.select(this)
+					            .style("left", (d.x - padding) + "px")
+					            .style("top", (d.y - padding) + "px");
+					      }
+					    };
+					  };
+					  // rebind overlay to the map…
+					  overlay.setMap(map);
+					});
+				});
+
+		</script>
+		<div id="pie"><p><b>The</b><span>Audrics</span> | <img src="img/cdmx.png" width="50px"> <img src="img/lab.png" width="40px"></p>
+		</div>
+	</body>
+</html>
