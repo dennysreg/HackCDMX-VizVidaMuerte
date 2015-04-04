@@ -277,7 +277,7 @@ delegaciones.forEach(function(delegacion){
 });
 
 
-//agregamos posiciones de hospitales
+//agregamos posiciones de hospitales.
 hospitales.forEach(function(entry){/*
 	posicioneshospitales[entry.id] =  svg.append("g").attr("class",entry.id).attr("transform",  "translate(" + entry["latitud"] + "," + entry["longitud"] + ")" );*/
 	if((auxx*diameter)>(width-diameter)){ auxx=0;  auxy++;}
@@ -315,7 +315,7 @@ auxx=0;
 setInterval(function() {
  	if(activeAnimations.flujos){
  
- 		//pon el label con la fecha
+ 		//pon el label con la fecha.
  		var date = secuenciaDeTiempo[cont%secuenciaDeTiempo.length]; 		
  		var dateparts = date.split("-");
 
@@ -410,7 +410,7 @@ function visualizeThisDate(datestring){
 
 
 function changeHospitalPositionsToGrid(){
-	//quitamos el fondo de mapa
+	//quitamos el fondo de mapa.
 	$("svg").attr("id","");
 	//mostramos los labels de los hospitales
 	$("#nombre_del_hospital").css("visibility","visible");
