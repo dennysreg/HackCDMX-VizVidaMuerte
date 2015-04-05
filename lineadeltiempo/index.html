@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<meta charset="utf-8">
+<head>
+	<script src="js/d3/d3.v3.min.js"></script>
+	<script src="visualizaciones/lineaDelTiempo.js"></script>
+	<link rel="stylesheet" type="text/css" href="css/lineaDelTiempo.css">
+</head>
+<body>
+
+<div id="lineaDelTiempo"></div>
+<script>
+
+
+
+
+var visLineaTiempo = new visLineaTiempo();
+
+//main
+startLineaTiempo();
+
+function startLineaTiempo(){
+	var anios = [2011,2012,2013,2014];
+	var posicionMarcador = {posicionMes:0,posicionAnio:0};
+	
+	visLineaTiempo.initLineaTiempo(anios,posicionMarcador);
+	visLineaTiempo.initvisualizacion("#lineaDelTiempo","lineaDelTiempo",900,100,450);
+	visLineaTiempo.dovisualizacion(450);
+}
+
+</script>
+</body>
+</html>

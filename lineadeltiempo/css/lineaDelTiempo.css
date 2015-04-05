@@ -1,0 +1,11 @@
+.lineaDelTiempo .lalinea{
+	stroke: black;
+}
+
+.lineaDelTiempo .lalinea text{
+	text-anchor: middle;
+}
+
+.lineaDelTiempo .marcador{
+	
+}
