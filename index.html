@@ -129,6 +129,7 @@ var colorsmuertos = d3.scale.ordinal()
 "#949494",
 "#A6A6A6"]);
 
+
 var secuenciaDeTiempo = 
 	[
 	 "2011-enero","2011-febrero","2011-marzo","2011-abril","2011-mayo","2011-junio","2011-julio","2011-agosto",
@@ -246,6 +247,7 @@ var bubble_radius=4;
 var auxx=0;
 
 
+
 var dataxfecha = data["2012"]["enero"];
 var hospitalesids = Object.keys(dataxfecha);
 var nodes = {};
@@ -328,15 +330,44 @@ secuenciaDeTiempo.forEach(function(fecha){
 	 
 });
 */
+var codeColors = {'hombre' : '#80b1d3', 'mujer':'#fb8072', 'ne' : '#bebada', 'novivo': '#8dd3c7', 'muerto' : '#1b9e77'};
+
+function getSexColor(n,h,m, i, escala)
+{
+	//mapea en proporcion al tope, 200 pts
+	var r0 = escala(n)
+	var r1 = r0 + escala(h);
+	var r2 = r1 + escala(m);
+	//var r3 = r2 + escala(n);
+	var color_sexo = codeColors['ne'];//'#ccebc5';
+	if (i < r0)
+		color_sexo = codeColors['novivo'];
+	else if( i < r1)
+		color_sexo = codeColors['hombre']
+	else if (i < r2)
+		color_sexo = codeColors['mujer'];
+	return color_sexo;
+}
+
 function visualizeThisDate(datestring){
 
 	var date = datestring.split("-");
 	dataxfecha = data[date[0]][date[1]];
 	var delay = 500; //1/2 segundo
+
 	for (var property in dataxfecha) {
 	    if (dataxfecha.hasOwnProperty(property)) {
-	        if (dataxfecha[property]['nacimientos'] >= 200)
-	        	dataxfecha[property]['nacimientos'] = 200;
+	        if (dataxfecha[property]['nacimientos'] > 180){
+
+
+	        	dataxfecha[property]['nac_total'] = dataxfecha[property]['nacimientos']; 	        		        	
+	        	dataxfecha[property]['nacimientos'] = 180;
+	        }else if( typeof dataxfecha[property]['nac_total'] === 'undefined')
+	        {
+	        	dataxfecha[property]['nac_total'] = dataxfecha[property]['nacimientos']; 
+	        }
+	        
+
 	    }
 	}
 
@@ -352,19 +383,41 @@ function visualizeThisDate(datestring){
 	
 	//	var nacidos= d3.range(dataxfecha[hid]["nacimientos"]).map(function() { return {radius: 1 });
 	//	var muertos= d3.range(dataxfecha[hid]["defuciones"]).map(function() { return {radius: 0; });
-	var nacidos = d3.range(dataxfecha[hid]["nacimientos"]).map(function() { return {size: 1, estado:"vivo", color:"green"}; });
+	var total_hombre = dataxfecha[hid]["MASCULINO"];
+	var total_mujer = dataxfecha[hid]["FEMENINO"];	
+	var total_nacimientos = dataxfecha[hid]["nac_total"]; 
+	var total_novivos = dataxfecha[hid]['NO VIVOS'];
+
+	var umbralScale = d3.scale.linear()
+				.domain([0,total_nacimientos])
+				.range([0,dataxfecha[hid]['nacimientos']]);
+	
+	var lista = d3.range(dataxfecha[hid]["nacimientos"]);
+	//lista = lista.sort(function() {return Math.random() - 0.5});
+	var nacidos = lista.map(function(i) 
+	{ 				
+		var color_sexo = getSexColor(total_novivos, total_hombre, total_mujer, i, umbralScale);
+		return {size: 1, estado:"vivo", color: color_sexo}; 
+	});
 	var muertos = d3.range(dataxfecha[hid]["defunciones"]).map(function() { return {size: 1, estado:"muerto", color:"red"}; });
 	 nodes[hid] = {children:nacidos.concat(muertos)};
 
+/*function comparator(a, b) {
+	var min = -1;
+	var max = 1;
+  return Math.random() * (max - min) + min;
+}*/
 	 //si no tiene defunciones ni nacimientos sal.
 	 if(nodes[hid]["children"].length==0){ return;}
 
-    debugger;
+    //debugger;
 	bubbleHospitals[hid] = 
 		posicioneshospitales[hid]
 		.selectAll("circle."+hid)
 		.data(
-			bubble.nodes(classes(nodes[hid]))
+			bubble
+			.nodes(classes(nodes[hid]))
+			//.sort(comparator)
 		);
 
 	bubbleHospitals[hid]
@@ -381,8 +434,11 @@ function visualizeThisDate(datestring){
 		.attr("r", bubble_radius)
 		.transition()
       	.duration(delay)
-      	.style("fill",function(d,i){ return d.estado=="vivo" ?  colorvivos(i):colorsmuertos(i);})
+      	//.style("fill",function(d,i){ return d.estado=="vivo" ?  colorvivos(i):colorsmuertos(i);})      	
+      	.style("fill",function(d,i){ return d.estado=="vivo" ?  d.color : codeColors['muerto']})      	
       	.style("opacity",1.0)
+      	//.style("stroke", function(d,i) { return d.color=="white" ? "black" : "white"; })
+      	//.style("stroke-width", 0.5)
       	.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; })
 
 	bubbleHospitals[hid]
