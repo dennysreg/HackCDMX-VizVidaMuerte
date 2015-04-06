@@ -106,14 +106,6 @@
 <!--d3-->
 <script src="d3/d3.min.js"></script>
 <script>
-<<<<<<< Updated upstream
-=======
-<<<<<<< HEAD
-//prueba de fork denise
-=======
-//prueba de branch denise
->>>>>>> denise-branch
->>>>>>> Stashed changes
 var loop = true;
 var currentTimeLinePosition = 0;
 //colores de vivos.
@@ -278,6 +270,38 @@ delegaciones.forEach(function(delegacion){
 		
 });
 
+if (!Array.prototype.last){
+    Array.prototype.last = function(){
+        return this[this.length - 1];
+    };
+};
+
+function rompeLineas(s, maxLetrasPorLinea){
+	
+	var words = s.split(" ");
+	words.reverse();	
+	
+	var result = [];
+	var linea = "";	
+	var nueva_palabra;		
+	while(words.length > 0 )
+	{		
+		nueva_palabra = (linea.length == 0 ? "" : " ") + words.last();
+		if (linea.length == 0 && nueva_palabra.length > maxLetrasPorLinea) break;
+
+		if ( (linea.length + nueva_palabra.length) <= maxLetrasPorLinea)
+		{	
+			linea += nueva_palabra;
+			words.pop();			
+		}else
+		{
+			result.push(linea);
+			linea = "";
+		}	
+	}	
+	if (linea.length > 0){ result.push(linea); }
+	return result;
+}
 
 //agregamos posiciones de hospitales.
 hospitales.forEach(function(entry){/*
@@ -286,16 +310,26 @@ hospitales.forEach(function(entry){/*
 	if(auxx%2==0){ auxyd=auxy+0.05;}else{auxyd=auxy;}
 
 	posicioneshospitales[entry.id] =  
-	posicionesdelegaciones[entry.delegacion].append("g").attr("class",entry.id).attr("transform",  "translate(" + (auxx*diameter) + "," + (auxyd*diameter)  + ")" );
+		posicionesdelegaciones[entry.delegacion]
+		.append("g")
+			.attr("class",entry.id)
+			.attr("transform",  "translate(" + (auxx*diameter*1.5) + "," + (auxyd*diameter*1.2)  + ")" );
 	
-	var shortName = entry.Nombre.substring(8,entry.Nombre.length);
-	posicioneshospitales[entry.id].append("text")
-	  .attr("class","nombre_del_hospital")
-      .attr("dx", diameter/2)
-      .attr("dy", diameter*0.99)
-      .style("text-anchor", "middle")
-      .style("font-weight", "bold")
-      .text( shortName);
+	//var shortName = entry.Nombre.substring(8,entry.Nombre.length);
+	var title = rompeLineas(entry.Nombre, 25);	
+
+	posicioneshospitales[entry.id]
+		.selectAll("title_text")
+		.data(title)
+		.enter()
+		.append("text")
+			.attr("class","nombre_del_hospital")
+			.attr("dx", diameter*0.5)
+			.attr("dy", function(d,i) { return diameter*0 + i*12 - title.length/2*12 ; })
+			
+			.style("text-anchor", "middle")
+			.style("font-weight", "bold")
+			.text(function(d) { return d; });
 
 
 	auxx++;
