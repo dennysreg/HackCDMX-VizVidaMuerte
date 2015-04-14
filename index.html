@@ -4,16 +4,27 @@
 <link href='http://fonts.googleapis.com/css?family=Yanone+Kaffeesatz:400,300, 200' rel='stylesheet' type='text/css'>
 		<link href='http://fonts.googleapis.com/css?family=Lobster' rel='stylesheet' type='text/css'>
 	<style>
+  body{
+    background-color: #99d8c9;
+  }
 	text {
 	  font: 10px sans-serif;
 	}
-
+div#aqui_va_el_canvas{
+  width: 760px;
+  /*height: 766px;
+  overflow: scroll;*/
+  background-color: #f3f3f3;
+  margin: 0 auto;
+    
+}
 	svg#mapa{
     	background-image: url("images/delegaciones.png");
-	   background-size:1100px 700px;
+	    background-size:766px 700px;
 	    background-repeat: no-repeat;
-	    width:1100px;
+	    width:766px;
 	    height: 700px;
+      border: solid 1px red;
 	}
 
 	.titulotipos{
@@ -28,6 +39,10 @@
 		font-family: 'Yanone Kaffeesatz', sans-serif; font-weight: 400;
 
 	}
+  div#legend{
+    width: 800px;
+    margin: 0 auto;
+  }
 	/*div#legend{
 		float:left;
 	}
@@ -47,7 +62,7 @@
 }
 
 .year.label.active {
-  fill: #aaa;
+  fill: #f00;
 
 }
 
@@ -60,17 +75,23 @@
 /***estilos extra*/
 .nombre_del_hospital{font-family: 'Yanone Kaffeesatz', sans-serif; font-weight: 200; font-size: 13px;}
 
-#filter {font-family: sans-serif, arial; text-transform: uppercase; text-align: center; background: #eee;}
+#filter {font-family: sans-serif, arial; text-transform: uppercase; text-align: center; /*background: #eee;*/}
 #filter p {display:inline-block; margin: 10px;  font-family: 'Yanone Kaffeesatz', sans-serif; font-weight: 400; text-align: center; font-size: 20px;}
 
 
-#pie{ height: 60px; width: 100%; top: 0px; z-index: 99; text-align: center; background-color: #EEE; font-family: 'Yanone Kaffeesatz', sans-serif; margin-top: -35px;}
+#pie{ height: 60px; width: 100%; top: 0px; z-index: 99; text-align: center; /*background-color: #EEE;*/ font-family: 'Yanone Kaffeesatz', sans-serif; margin-top: -35px;}
 			#pie p{line-height: 40px; font-size: 30px; font-weight: 400; color: #000}
 			#pie p span{color: #FF0066}
 			#pie p b{font-family: 'Lobster', cursive;color: #000}
 
 #header{padding-bottom: 0px;}			
-
+/*#legend ul { 
+  margin: 0;
+  padding: 0;
+  list-style-type: none;
+  text-align: center;
+}
+#legend ul li { display: inline; }*/
 	</style>
 
 
@@ -89,15 +110,19 @@
   		<option value="3">tipo de hospitales</option>
 	</select>
 	</div>
+  <div id="timeline"></div>
 	<div id="legend">
-	<a id="Mes"></a>&nbsp<a id="Fecha"> </a>
-	</div>
+      <a id="Mes"></a>&nbsp<a id="Fecha"> </a>
+	</div>  
+  
 </header>
 
-<div id="pie"><p><b>The</b><span>Audrics</span> | <img src="images/cdmx.png" width="50px"> <img src="images/lab.png" width="40px"></p>
-		</div>
-	
-  	<div id="aqui_va_el_canvas"></div>
+
+  	<div id="aqui_va_el_canvas" ></div>
+    <footer id="pie">
+        <p><b>The</b><span>Audrics</span> | <img src="images/cdmx.png" width="50px"> <img src="images/lab.png" width="40px"></p>
+    </footer>
+  
 
 <script src="scripts/nacimiento_defunciones_data.js"></script>
 <script src="scripts/hospitales_data2.js"></script>
@@ -139,8 +164,8 @@ var secuenciaDeTiempo =
 					];
 
 //agregar y crear en canvas.
-var width = 1250,
-    height = 10000;
+var width = 766,
+    height = 2000;
 
 var diameter=170;
     format = d3.format(",d"),
@@ -215,17 +240,22 @@ var svg = d3.select("#aqui_va_el_canvas").append("svg")
   }
 
 // Add the year label; the value is set on transition.
+var svgTimeline = d3.select("#timeline").append("svg")
+    .attr("width", width)
+    .attr("height", 45);     
+
+
 var valorInicial = "Línea de Tiempo";
-var label = svg.append("text")
+var label = svgTimeline.append("text")
     .attr("class", "year label")
-    .attr("text-anchor", "start")
-    .attr("y", 60) 
-    .attr("x", 0)
+    .attr("text-anchor", "middle")
+    .attr("y", 35) 
+    .attr("x", 370)
     .attr("opacity",0.7)
     .text(valorInicial);
 // Add an overlay for the year label.
   var box = label.node().getBBox();
- var overlay = svg.append("rect")
+ var overlay = svgTimeline.append("rect")
         .attr("class", "overlay")
         .attr("x", box.x)
         .attr("y", box.y)
@@ -243,7 +273,9 @@ var bubble = d3.layout.pack()
     .padding(1);
 
 var bubble_radius=4;
-var auxx=0;
+var auxx=0,auxy=0,auxyd=0;
+var padding = { left: 40, top: 40, right: 10, bottom: 40};
+var cell_padding = { left: 40, top: 0.5, right: 30, bottom: 70};
 
 
 
@@ -251,7 +283,7 @@ var dataxfecha = data["2012"]["enero"];
 var hospitalesids = Object.keys(dataxfecha);
 var nodes = {};
 
-var auxx=0,auxy=0.5,auxyd=0;
+
 var bubbleHospitals={};
 var posicioneshospitales={};
 var posicionesdelegaciones={};
@@ -304,20 +336,32 @@ function rompeLineas(s, maxLetrasPorLinea){
 }
 
 //agregamos posiciones de hospitales.
-hospitales.forEach(function(entry){/*
+hospitales.forEach(function(entry)
+{/*
 	posicioneshospitales[entry.id] =  svg.append("g").attr("class",entry.id).attr("transform",  "translate(" + entry["latitud"] + "," + entry["longitud"] + ")" );*/
-	if((auxx*diameter)>(width-diameter)){ auxx=0;  auxy++;}
-	if(auxx%2==0){ auxyd=auxy+0.05;}else{auxyd=auxy;}
+  //var auxx=0,auxy=0.5,auxyd=0;
+  
+  var posx =  padding.left + (auxx * (diameter + cell_padding.left + cell_padding.right));
+  var posy =  padding.top  + (auxy * (diameter + cell_padding.bottom));
+  
+  if( (posx + diameter*2)  > width - padding.right )
+  { 
+      auxx = 0;  
+      auxy = auxy + 1;
+  }else
+  {
+    auxx = auxx + 1;
+  }
 
 	posicioneshospitales[entry.id] =  
 		posicionesdelegaciones[entry.delegacion]
 		.append("g")
 			.attr("class",entry.id)
-			.attr("transform",  "translate(" + (auxx*diameter*1.5) + "," + (auxyd*diameter*1.2)  + ")" );
+			.attr("transform",  "translate(" + posx + "," + posy + ")" );
 	
 	//var shortName = entry.Nombre.substring(8,entry.Nombre.length);
 	var title = rompeLineas(entry.Nombre, 25);	
-
+  //var title = rompeLineas("("+posx +","+ posy + ") (" + auxx + ", "+ auxy + ")", 25);  
 	posicioneshospitales[entry.id]
 		.selectAll("title_text")
 		.data(title)
@@ -330,10 +374,6 @@ hospitales.forEach(function(entry){/*
 			.style("text-anchor", "middle")
 			.style("font-weight", "bold")
 			.text(function(d) { return d; });
-
-
-	auxx++;
-	 
 	
 });
 
@@ -349,7 +389,7 @@ auxx=0;
 
 
 setInterval(function() {
- 	if(activeAnimations.flujos){
+ 	/*if(activeAnimations.flujos){
  
  		//pon el label con la fecha.
  		var date = secuenciaDeTiempo[cont%secuenciaDeTiempo.length]; 		
@@ -359,8 +399,8 @@ setInterval(function() {
  		$("a#Mes").text(dateparts[1]);
  		//manda a visualizar!!!
 		  visualizeThisDate(secuenciaDeTiempo[cont%secuenciaDeTiempo.length]);
-		  cont++;
-	}   	
+		  cont = (cont + 1) % 65535;
+	} */
   
 }, 900);
 
@@ -371,23 +411,25 @@ secuenciaDeTiempo.forEach(function(fecha){
 	 
 });
 */
-var codeColors = {'hombre' : '#80b1d3', 'mujer':'#fb8072', 'ne' : '#bebada', 'novivo': '#8dd3c7', 'muerto' : '#1b9e77'};
+//Los ne se consideran hombres
+var codeColors = {'hombre' : '#80b1d3', 'mujer':'#fb8072', 'ne' : '#80b1d3', 'novivo': '#d9d9d9', 'muerto' : '#525252'};
 
-function getSexColor(n,h,m, i, escala)
+function getCategoryColor(cat1, cat2, cat3, index, escala)
 {
 	//mapea en proporcion al tope, 200 pts
-	var r0 = escala(n)
-	var r1 = r0 + escala(h);
-	var r2 = r1 + escala(m);
+	var rango_cat1 = escala(cat1)
+	var rango_cat2 = rango_cat1 + escala(cat2);
+	var rango_cat3 = rango_cat1 + escala(cat3);
 	//var r3 = r2 + escala(n);
-	var color_sexo = codeColors['ne'];//'#ccebc5';
-	if (i < r0)
-		color_sexo = codeColors['novivo'];
-	else if( i < r1)
-		color_sexo = codeColors['hombre']
-	else if (i < r2)
-		color_sexo = codeColors['mujer'];
-	return color_sexo;
+	var color = codeColors['novivo'];//'#ccebc5';
+  //capa1 <- 'mujer', capa2 <- 'hombre', capa3 <- 'ne', capa4 <- 'no vivos'
+	if (index < rango_cat1)
+		color = codeColors['mujer'];
+	else if( index < rango_cat2)
+		color = codeColors['hombre'];
+	else if (index < rango_cat3)
+		color = codeColors['ne'];
+	return color;
 }
 
 function visualizeThisDate(datestring){
@@ -417,17 +459,21 @@ function visualizeThisDate(datestring){
 	nodes = {};
 	//que fecha estamos visualizando?
 	//console.log("ids x " + datestring+ " : " + hospitalesids.length);
-
+  d3.selectAll(".legend").remove();
 	hospitalesids.forEach(function(hid){
 	//desactiva la animacion
 	if(loop== true && !activeAnimations.flujos) return;
 	
 	//	var nacidos= d3.range(dataxfecha[hid]["nacimientos"]).map(function() { return {radius: 1 });
 	//	var muertos= d3.range(dataxfecha[hid]["defuciones"]).map(function() { return {radius: 0; });
+  var totales = new Object();
+
 	var total_hombre = dataxfecha[hid]["MASCULINO"];
 	var total_mujer = dataxfecha[hid]["FEMENINO"];	
 	var total_nacimientos = dataxfecha[hid]["nac_total"]; 
 	var total_novivos = dataxfecha[hid]['NO VIVOS'];
+  var total_ne = total_nacimientos - (total_hombre + total_mujer + total_novivos);
+  var total_defunciones = dataxfecha[hid]["defunciones"];
 
 	var umbralScale = d3.scale.linear()
 				.domain([0,total_nacimientos])
@@ -437,11 +483,13 @@ function visualizeThisDate(datestring){
 	//lista = lista.sort(function() {return Math.random() - 0.5});
 	var nacidos = lista.map(function(i) 
 	{ 				
-		var color_sexo = getSexColor(total_novivos, total_hombre, total_mujer, i, umbralScale);
+		var color_sexo = getCategoryColor(total_mujer, total_hombre, total_ne, i, umbralScale);
 		return {size: 1, estado:"vivo", color: color_sexo}; 
 	});
 	var muertos = d3.range(dataxfecha[hid]["defunciones"]).map(function() { return {size: 1, estado:"muerto", color:"red"}; });
-	 nodes[hid] = {children:nacidos.concat(muertos)};
+  var vivosymuertos = nacidos.concat(muertos);
+	 nodes[hid] = {children:vivosymuertos};
+
 
 /*function comparator(a, b) {
 	var min = -1;
@@ -449,17 +497,14 @@ function visualizeThisDate(datestring){
   return Math.random() * (max - min) + min;
 }*/
 	 //si no tiene defunciones ni nacimientos sal.
+   var data_bubble = bubble.nodes(classes(nodes[hid])).slice(1);
+   //con el slice omitimos el nodo padre, que aparece en el centro :) !!
 	 if(nodes[hid]["children"].length==0){ return;}
-
-    //debugger;
+    
 	bubbleHospitals[hid] = 
 		posicioneshospitales[hid]
 		.selectAll("circle."+hid)
-		.data(
-			bubble
-			.nodes(classes(nodes[hid]))
-			//.sort(comparator)
-		);
+		.data(data_bubble);
 
 	bubbleHospitals[hid]
 		.enter()
@@ -489,6 +534,31 @@ function visualizeThisDate(datestring){
 		.style("opacity",0.0)
 		//.attr("r",0)
 		.remove();
+
+
+  var diameter = 10;
+  var resumen = [   { "id": "N", "total": total_nacimientos },
+    { "id": "H", "total": (total_hombre + total_ne) },
+    { "id": "M", "total": total_mujer},
+    { "id": "NV" , "total": total_novivos},
+    { "id": "D", "total": total_defunciones},
+    ];
+
+  
+  posicioneshospitales[hid]
+    .selectAll("detail_text")
+    .data(resumen)
+    .enter()
+    .append("text")
+      .attr("class","legend")
+      .attr("dx", -15)
+      .attr("dy", function(d,i) { return diameter*0.2 + i*10 ; })      
+      .style("text-anchor", "left")      
+      .text(function(d) { return d.id + ": " + d.total; });
+  
+  //posicioneshospitales[hid]
+    
+ 
 
 	
 	});
@@ -647,14 +717,27 @@ var numa= 0;
 }
 
 
-function classes(root) {
+function classes(root) 
+{
   var classes = [];
 
-  function recurse(name, node) {
-    if (node.children) node.children.forEach(function(child) { recurse(node.name, child); });
-    else classes.push({estado: node.estado, className: node.name, value: node.size, color: node.color});
+  function recurse(name, node) 
+  {
+    if (node.children){ 
+        node.children.forEach(function(child) 
+        { 
+          recurse(node.name, child); 
+        }); 
+    }
+    else { 
+      classes.push({
+        estado: node.estado,
+         className: node.name, 
+         value: node.size, 
+         color: node.color
+       });
+    }
   }
-
   recurse(null, root);
   return {children: classes};
 }
