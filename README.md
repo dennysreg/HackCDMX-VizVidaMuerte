@@ -1,16 +1,16 @@
-VS002-Vida-y-Muerte-en-CDMX
-Descripción
+
+Descripción. 
 El propósito del proyecto es representar de forma visual, la actividad de cada uno de los hospitales públicos de la ciudad, a través del número de nacimientos y defunciones que se registran en cada uno de ellos. 
 
-Dependencias
+Dependencias.
 El proyecto no cuenta con una conexión a una base de datos, los datos se pre-procesan y se almacenan en archivos locas en formato JSON. 
 
-Configuración
+Configuración. 
 N/A
 
-Configuración de desarrollo local
+Configuración de desarrollo local. 
 Para poder replicarlo, basta con descargar el proyecto y levantar un servidor web.
 
-Despliegue
+Despliegue. 
 Solo basta copiar y pegar los archivos que conforman el proyecto.
 
