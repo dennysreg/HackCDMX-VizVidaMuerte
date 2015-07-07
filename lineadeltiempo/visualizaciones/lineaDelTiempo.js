@@ -6,11 +6,11 @@ function visLineaTiempo(){
 	this.margin;
 	this.DOMid;
 	this.classname;
-	this.duration;
+	this.duracion;
 	this.lineaTiempo = new LineaTiempo();
 
 	this.linealargo;
-
+	this.meseslargo;
 	this.initLineaTiempo = function(anios,posicionMarcador){
 		
 		this.lineaTiempo.setInfo(anios,posicionMarcador);
@@ -21,7 +21,7 @@ function visLineaTiempo(){
 		this.height = h;
 		this.DOMid = DOMid;
 		this.classname = classname;
-		this.duration = duration;
+		this.duracion = duration;
 		var svg = d3.select(DOMid)
 				.append("svg")
 				.attr("class","vis"+classname)
@@ -36,7 +36,7 @@ function visLineaTiempo(){
 	this.dovisualizacion = function(linealargo){
 		var that = this;
 		var lineaTiempo = this.lineaTiempo;
-		var medidaMes = linealargo/lineaTiempo.mesestotales;
+		this.meseslargo = linealargo / (lineaTiempo.mesestotales-1);
 		this.linealargo = linealargo;
 
 		var svg =  d3.select(".vis"+this.classname+" ."+this.classname)
@@ -69,15 +69,13 @@ function visLineaTiempo(){
 
 		//set el posicionMarcador
 		initMarcador(".vis"+this.classname+" ."+this.classname + " .lalinea","imgs/lineaDelTiempo/flecha.png",new Array(lineaTiempo.posicionMarcador),meseslargo);
-		//set botones de bordes
 		
-
+		//set botones de bordes
 		var infoposbotones = [{nombre:"botonRegresa",px:0 			 ,py:0 ,w:30, h:30, imgpath:"imgs/lineaDelTiempo/boton_paraAtras_"},
 							  {nombre:"botonAvanza" ,px:linealargo+40,py:0 ,w:30, h:30, imgpath:"imgs/lineaDelTiempo/boton_paraAdelante_"}]
 		initBotonesDeLosLados(".vis"+this.classname+" ."+this.classname,infoposbotones,that);
 
-
-
+		this.initAnios(".vis"+this.classname,lineaTiempo.anios,100);
 
 		function initMarcador(DOMid,imgpath,data,meseslargo){
 			var svg = d3.select(DOMid);
@@ -89,10 +87,11 @@ function visLineaTiempo(){
 			.attr("height",28)
 			.attr("class","marcador")
 			.attr("transform",function(d){
-				return "translate("+((meseslargo*d.posicionMes)-14)+",-30)";
+				return "translate("+((meseslargo*d.mes)-14)+",-30)";
 			});
 			
 		}
+
 
 		function initBotonesDeLosLados(DOMid,data,father){
 			var papa = father;
@@ -102,30 +101,65 @@ function visLineaTiempo(){
 				.attr("xlink:href", function(d){return d.imgpath+"idle.png"})
 				.on("mouseover",function(d){ d3.select(this).attr("xlink:href", d.imgpath+"hover.png")})
 				.on("mouseout",function(d){ d3.select(this).attr("xlink:href", d.imgpath+"idle.png")})
-				.on("click",				)
+				.on("click",function(d){
+					if(d.nombre == "botonAvanza"){
+						adelantaMes(lineaTiempo);
+					}
+					else{
+						retrasaMes(lineaTiempo);
+					}
+					
+					visLineaTiempo.setPosicionposicionMarcador();
+				})
 				.attr("width",function(d){return d.w})
 				.attr("height",function(d){return d.h})
 				.attr("class","botonesavance")
 				.attr("transform",function(d){
 					return "translate("+d.px+","+d.py+")";
 				});
-
-			
 		}
 	}
 	
+	this.initAnios = function(DOMid, data,espacioEntreAnios) {
+		var svg = d3.select(DOMid);
+		var lineaTiempo = this.lineaTiempo;
+
+		debugger;
+		var grupoAnios = svg.append("g").attr("class","losAnios");
+		var anios = grupoAnios.selectAll(".anioslabels").data(data);
+		
+		for(var i=0;i<=lineaTiempo.anios.length;i++)
+		{
+			anios.enter().append("text")
+				.attr("x",espacioEntreAnios*i)
+				.attr("y",10)
+				.text(lineaTiempo.anios[i]);	
+		}
+		
+	}
+
+
+	function adelantaMes(linea){
+		linea.addmes();
+	}
 	
 
-	
-
-	this.retrasaMes = function(){
-		this.lineaTiempo.retrasaMes();
+	function retrasaMes(linea){
+		linea.retrasaMes();
 	}
 
 	this.setPosicionposicionMarcador = function(){
-
+		
+		var marcador = d3.select(".marcador");
+		marcador.transition().duration(this.duracion).attr("transform",function(d){
+				
+					return "translate("+((visLineaTiempo.meseslargo*visLineaTiempo.lineaTiempo.posicionMarcador.mes)-14)+",-30)";
+				});
 	}
 }
+
+
+
 
 function LineaTiempo(){
 	this.meses=["Ene","Feb",
@@ -146,18 +180,22 @@ function LineaTiempo(){
 	}		
 
 	this.addmes = function(){
-		if(posicionMarcador.mes==11)
-			(posicionMarcador.posanio++)%this.anios.length; 
+		if(this.posicionMarcador.mes==11)
+			(this.posicionMarcador.anio++)%this.anios.length; 
 		
-		(posicionMarcador++)%11;
+		(this.posicionMarcador.mes++)%11;
 	}
 	this.retrasaMes = function(){
-		if(posicionMarcador.mes==0)
-			(posicionMarcador.posanio--)%this.anios.length; 
+		if(this.posicionMarcador.mes==0)
+			(this.posicionMarcador.anio--)%this.anios.length; 
 
-		(posicionMarcador--)%11
+		(this.posicionMarcador.mes--)%11
 	}
 	this.getMesesTotales=function(){
 		return 12;
+	}
+
+	this.getCurrentAnio=function(){
+		return this.anios[this.posicionMarcador.anio];
 	}
 }
