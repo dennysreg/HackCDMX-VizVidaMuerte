@@ -22,6 +22,9 @@ function visLineaTiempo(){
 		this.DOMid = DOMid;
 		this.classname = classname;
 		this.duracion = duration;
+
+		this.initAnios(DOMid,this.lineaTiempo.anios,100);
+
 		var svg = d3.select(DOMid)
 				.append("svg")
 				.attr("class","vis"+classname)
@@ -39,12 +42,15 @@ function visLineaTiempo(){
 		this.meseslargo = linealargo / (lineaTiempo.mesestotales-1);
 		this.linealargo = linealargo;
 
+		
+		this.setCurrentAnioBlack();
+
 		var svg =  d3.select(".vis"+this.classname+" ."+this.classname)
 					.attr("transform","translate("+this.width*.05+","+this.height*.50+")");
 
 		/*dibuja la linea*/
 		var grupoLinea = svg.append("g").attr("class","lalinea")
-			.attr("transform","translate("+40+","+20+")");
+			.attr("transform","translate("+5+","+0+")");
 		grupoLinea.append("line").attr("class","lineaPrincipal")
 			.attr("x1",0)
 			.attr("y1",0)
@@ -67,15 +73,16 @@ function visLineaTiempo(){
 				.text(lineaTiempo.meses[i]);
 		}
 
+		
 		//set el posicionMarcador
 		initMarcador(".vis"+this.classname+" ."+this.classname + " .lalinea","imgs/lineaDelTiempo/flecha.png",new Array(lineaTiempo.posicionMarcador),meseslargo);
 		
 		//set botones de bordes
-		var infoposbotones = [{nombre:"botonRegresa",px:0 			 ,py:0 ,w:30, h:30, imgpath:"imgs/lineaDelTiempo/boton_paraAtras_"},
-							  {nombre:"botonAvanza" ,px:linealargo+40,py:0 ,w:30, h:30, imgpath:"imgs/lineaDelTiempo/boton_paraAdelante_"}]
+		var infoposbotones = [{nombre:"botonRegresa",px:-40 			 ,py:-15 ,w:30, h:30, imgpath:"imgs/lineaDelTiempo/boton_paraAtras_"},
+							  {nombre:"botonAvanza" ,px:linealargo+13,py:-15 ,w:30, h:30, imgpath:"imgs/lineaDelTiempo/boton_paraAdelante_"}]
 		initBotonesDeLosLados(".vis"+this.classname+" ."+this.classname,infoposbotones,that);
 
-		this.initAnios(".vis"+this.classname,lineaTiempo.anios,100);
+		
 
 		function initMarcador(DOMid,imgpath,data,meseslargo){
 			var svg = d3.select(DOMid);
@@ -121,23 +128,35 @@ function visLineaTiempo(){
 	}
 	
 	this.initAnios = function(DOMid, data,espacioEntreAnios) {
-		var svg = d3.select(DOMid);
+		var dom = d3.select(DOMid);
 		var lineaTiempo = this.lineaTiempo;
 
-		debugger;
-		var grupoAnios = svg.append("g").attr("class","losAnios");
+		
+		var grupoAnios = dom.append("div").attr("class","losAnios");
 		var anios = grupoAnios.selectAll(".anioslabels").data(data);
 		
-		for(var i=0;i<=lineaTiempo.anios.length;i++)
-		{
-			anios.enter().append("text")
-				.attr("x",espacioEntreAnios*i)
-				.attr("y",10)
-				.text(lineaTiempo.anios[i]);	
-		}
+		
+			anios.enter().append("div")
+				.attr("id",function(d,i){ return "anio"+i;})
+				.text(function(d,i){ return d});	
+		
 		
 	}
 
+	this.setCurrentAnioBlack = function(){
+		var lineaTiempo = this.lineaTiempo;
+		for(var i=0;i<lineaTiempo.anios.length;i++)
+		{
+			if (i == lineaTiempo.posicionMarcador.anio)
+			{
+				d3.select("#anio"+i).attr("class","selected");
+			}else
+			{
+				d3.select("#anio"+i).attr("class","unselected");
+			}
+				
+		}
+	}
 
 	function adelantaMes(linea){
 		linea.addmes();
