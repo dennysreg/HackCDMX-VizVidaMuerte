@@ -99,16 +99,22 @@ function visLineaTiempo(){
 			
 		}
 
-
+		
 		function initBotonesDeLosLados(DOMid,data,father){
+
 			var papa = father;
 			var svg = d3.select(DOMid);
 			var botones = svg.selectAll(".botonesavance").data(data);
+
+			var mouseIsDown= false;
+			var timeInterval = true;
+
 			botones.enter().append("svg:image")
 				.attr("xlink:href", function(d){return d.imgpath+"idle.png"})
 				.on("mouseover",function(d){ d3.select(this).attr("xlink:href", d.imgpath+"hover.png")})
 				.on("mouseout",function(d){ d3.select(this).attr("xlink:href", d.imgpath+"idle.png")})
 				.on("click",function(d){
+					
 					if(d.nombre == "botonAvanza"){
 						adelantaMes(lineaTiempo);
 					}
@@ -117,6 +123,7 @@ function visLineaTiempo(){
 					}
 					
 					visLineaTiempo.setPosicionposicionMarcador();
+					visLineaTiempo.setCurrentAnioBlack();
 				})
 				.attr("width",function(d){return d.w})
 				.attr("height",function(d){return d.h})
@@ -138,6 +145,9 @@ function visLineaTiempo(){
 		
 			anios.enter().append("div")
 				.attr("id",function(d,i){ return "anio"+i;})
+				.on("click",function(d,i){
+					setCurrentAnio(lineaTiempo,i);
+				})
 				.text(function(d,i){ return d});	
 		
 		
@@ -165,6 +175,12 @@ function visLineaTiempo(){
 
 	function retrasaMes(linea){
 		linea.retrasaMes();
+	}
+
+	function setCurrentAnio(linea, anioSeleccionado)
+	{
+		linea.posicionMarcador.anio = anioSeleccionado;
+		visLineaTiempo.setCurrentAnioBlack();
 	}
 
 	this.setPosicionposicionMarcador = function(){
@@ -199,16 +215,31 @@ function LineaTiempo(){
 	}		
 
 	this.addmes = function(){
+		//no hagas nada si estas en la ultima fecha
+		if(this.posicionMarcador.anio == this.anios.length-1 && this.posicionMarcador.mes == 11)
+			return;
+
 		if(this.posicionMarcador.mes==11)
-			(this.posicionMarcador.anio++)%this.anios.length; 
+			this.posicionMarcador.anio = (this.posicionMarcador.anio + 1)%this.anios.length; 
 		
-		(this.posicionMarcador.mes++)%11;
+		this.posicionMarcador.mes= (this.posicionMarcador.mes + 1)%12;
 	}
 	this.retrasaMes = function(){
+		
+		//no hagas nada se llegaste a la primera fecha
+		if(this.posicionMarcador.anio == 0 && this.posicionMarcador.mes == 0)
+			return;
+		
 		if(this.posicionMarcador.mes==0)
-			(this.posicionMarcador.anio--)%this.anios.length; 
+		{
 
-		(this.posicionMarcador.mes--)%11
+			this.posicionMarcador.anio = this.posicionMarcador.anio -1; 
+			this.posicionMarcador.mes = 11;			
+		}
+		else
+		{
+			this.posicionMarcador.mes--;
+		}
 	}
 	this.getMesesTotales=function(){
 		return 12;
