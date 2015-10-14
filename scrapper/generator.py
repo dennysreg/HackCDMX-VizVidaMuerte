@@ -10,6 +10,10 @@ from itertools import izip
 import dateutil
 from random import randint
 
+def set_default(obj):    
+    if isinstance(obj, numpy.int64):
+        return  obj.astype(numpy.int32)    
+    raise TypeError
 
 def getEgresos():		
 	#"""A partir de un mes-año regresa los registros de defunciones y nacimientos aplicando ese filtro"""
@@ -42,17 +46,16 @@ def getEgresos():
 	#se quda fuera el 2010 y en 2012 falta el mes de diciembre
 	dict_years = {}
 	meses = ["","enero", "febrero", "marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"]
-	for year in [2011, 2012]:			
-		dict_hospitales = {}
-		#acum = 0		
-		dict_meses = {}
-		for mes in range(1, len(meses)):		
-			
-			df = defunciones[defunciones['year'] == year][defunciones['month'] == mes] 
-			df2 = nacimientos[nacimientos['year'] == year][nacimientos['month'] == mes] 
-			
-			#busca hospital por id y contabiliza los registros de nacimientos y defunciones
-			for hospital in lista_hospitales:				
+
+	dict_hospitales = {}
+
+	for hospital in lista_hospitales:
+		dict_years = {}
+		for year in [2011, 2012]:
+			dict_months = {}
+			for mes in range(1, len(meses)):
+				df = defunciones[defunciones['year'] == year][defunciones['month'] == mes] 
+				df2 = nacimientos[nacimientos['year'] == year][nacimientos['month'] == mes] 
 				ds = df[df['clues_id'] == hospital]
 				num_defunciones = len(ds.index)
 				
@@ -72,13 +75,11 @@ def getEgresos():
 				#dict_cat = dict_cords[hospital]
 				#mezcla ambos diccionarios
 				dict_row.update({"nacimientos": num_nacimientos , "defunciones": num_defunciones})			
-				dict_hospitales[hospital] =  dict_row
+				dict_months[mes] =  dict_row
+			dict_years[year] =  dict_months.copy()
+		dict_hospitales[hospital] = dict_years
 
-				#{"defunciones" : {"children" : lista_defunciones}, "nacimientos" : {"children" : lista_nacimientos}}
-			dict_meses[meses[mes]] = dict_hospitales.copy()
-		dict_years[year] = dict_meses
-
-	json_format_data = json.dumps(dict_years)
+	json_format_data = json.dumps(dict_hospitales, default=set_default)
 	return json_format_data
 
 
