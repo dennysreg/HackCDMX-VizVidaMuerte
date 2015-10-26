@@ -1,0 +1,8 @@
+.wrapper-all-hospitals .lineaContadora .lineaCentral
+{
+	stroke:black;
+}
+
+.wrapper-all-hospitals .nombre_del_hospital{
+	    font-size: 6px;
+}
