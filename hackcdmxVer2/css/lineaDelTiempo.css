@@ -1,0 +1,36 @@
+.lineaDelTiempo .lalinea{
+	stroke: black;
+}
+
+.lineaDelTiempo .lalinea text{
+	text-anchor: middle;
+}
+
+.lineaDelTiempo .marcador{
+	
+}
+
+.losAnios{
+	width:500px;
+	padding-left: 40px;
+}
+.losAnios div{
+	float: left;
+	width:100px;
+	text-align: center;
+	cursor : pointer;
+}
+
+#lineaDelTiempo .losAnios .unselected{
+	font: 12px monospace;
+	background: transparent;
+}
+
+#lineaDelTiempo .losAnios .selected{
+	font: bold 12px monospace;
+	background: Gainsboro;
+}
+
+.vislineaDelTiempo{
+	font: 12px monospace;
+}
