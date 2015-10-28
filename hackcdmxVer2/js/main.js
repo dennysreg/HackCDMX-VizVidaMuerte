@@ -1,5 +1,5 @@
 //
-var generalWidth=800;
+var generalWidth=1000;
 var generalHeight=610;
 //esta es la clase controladora de la visualizacion en general
 //controla las transiciones entre los estados de la visualizacion
@@ -99,7 +99,8 @@ function controlVisualizacion(){
     console.log("procesando un cambio de escena.Escena:"+sceneNum+",argumentos"+args);
 
     switch(sceneNum){
-      case 2: this.controladorDeEscenas.setEscena2();
+      case 2: this.controladorDeEscenas.setEscena2(args[0]);
+              this.centroDeControl.enterBotonPorMes();
               break;
     }
 
@@ -184,9 +185,11 @@ function ControladorDeEscenas(){
     controladorHospitales.controladorDeLineasContadoras.setLargoLinea(50);
   }
 
-  //en la escena dos ser ordenan los hospitales por delegacion o por tipo de hospital
-  this.setEscena2 = function(){
-    controladorHospitales.setPosicionDeDOMSHospitales(definidorDePosiciones.generaClustersDePosicionesPorTipo(100,100,600,600,80,150,mapHospitalesPorTipo,50));
+  //en la escena dos se ordenan los hospitales por delegacion o por tipo de hospital
+  this.setEscena2 = function(categoria){
+    
+    var arregloPorTipo = categoria=="Tipo" ? mapHospitalesPorTipo : mapHospitalesPorDelegacion; 
+    controladorHospitales.setPosicionDeDOMSHospitales(definidorDePosiciones.generaClustersDePosicionesPorTipo(100,100,1000,600,80,150,arregloPorTipo,50));
   }
 
   //en la escena tres se muestran los datos acumulando por mes.
@@ -614,16 +617,29 @@ function CentroDeControl(){
   this.fireEvent = function(args){
       var sceneNum = args[0];
       var sceneArguments = args[1];
+     
       controlVisualizacion.escuchoCambioDeEscena(sceneNum,sceneArguments);
   }
 
-  //crea los Botones
+  //crea los Botones por tipo
   this.enterBotonesOrdenarPorTipos = function(){
-    var that = this;
+   
     //set the data 
-    var botonesData = [{nombre:"botonOrdenarPorTipo",initial_px:100 ,initial_py:200 ,update_px:100 ,update_py:0 ,w:100, h:30, imgpath:"imgs/botones/OrdenarPorTipo_",args:[2,["Tipo"]]},
-                {nombre:"botonOrdenarPorDelegacion" ,initial_px:200 ,initial_py:200 ,update_px:200 ,update_py:0 ,w:100, h:30, imgpath:"imgs/botones/OrdenarPorDelegacion_",args:[2,["Delegacion"]]}];
+    var botonesData = [{nombre:"botonOrdenarPorTipo",initial_px:100 ,initial_py:200 ,update_px:100 ,update_py:50 ,w:100, h:30, imgpath:"imgs/botones/OrdenarPorTipo_",args:[2,["Tipo"]]},
+                {nombre:"botonOrdenarPorDelegacion" ,initial_px:200 ,initial_py:200 ,update_px:200 ,update_py:50 ,w:100, h:30, imgpath:"imgs/botones/OrdenarPorDelegacion_",args:[2,["Delegacion"]]}];
      
+    this.botones = new GrupoDeBotones();
+    this.botones.setEventManager(this);
+    this.botones.enterBotones(this.groupDOM,"ordenarPor",botonesData,this.fireEvent);
+    
+  }
+
+  //Crea boton por mes
+  this.enterBotonPorMes = function(){
+    debugger;
+    this.botones.eliminaBotones();
+    var botonesData = [{nombre:"botonVerPorMes",initial_px:100 ,initial_py:200 ,update_px:100 ,update_py:50 ,w:100, h:30, imgpath:"imgs/botones/OrdenarPorTipo_",args:[2,["Tipo"]]}];
+  
     this.botones = new GrupoDeBotones();
     this.botones.setEventManager(this);
     this.botones.enterBotones(this.groupDOM,"ordenarPor",botonesData,this.fireEvent);
@@ -638,6 +654,8 @@ function GrupoDeBotones(){
   this.DOMid;
   this.classname;
   this.svgDOM;
+  this.botones;
+
   var eventManager;
   var that = this;
   this.setEventManager=function(_eventManager){
@@ -649,10 +667,10 @@ function GrupoDeBotones(){
     this.classname = classname;
     this.svgDOM = svgDOM;
     
-    var botones = this.svgDOM.selectAll(classname).data(data);
+    this.botones = this.svgDOM.selectAll(classname).data(data);
     
 
-    botones.enter().append("svg:image")
+    this.botones.enter().append("svg:image")
         .attr("xlink:href", function(d){return d.imgpath+"idle.png"})
         .on("mouseover",function(d){ d3.select(this).attr("xlink:href", d.imgpath+"hover.png")})
         .on("mouseout",function(d){ d3.select(this).attr("xlink:href", d.imgpath+"idle.png")})
@@ -663,22 +681,26 @@ function GrupoDeBotones(){
         )
         .attr("width",function(d){return d.w})
         .attr("height",function(d){return d.h})
-        .attr("class","botonesavance")
+        .attr("class",this.classname)
         .attr("transform",function(d){
           return "translate("+d.initial_px+","+d.initial_py+")";
         });
 
-    botones.transition().duration(2000).attr("transform",function(d){
+    this.botones.transition().duration(2000).attr("transform",function(d){
           return "translate("+d.update_px+","+d.update_py+")";
         });
   }
 
-  function eliminaBotones(){
+  this.eliminaBotones = function(){
     var data = [];
 
-    var botones = this.svgDOM.selectAll(this.classname).data(data);
+    var botones = this.svgDOM.selectAll("."+this.classname).data(data);
 
-    botones.exit();
+    botones.data(data);
+    debugger;
+    botones.exit().transition().duration(1000).attr("transform",function(d){
+          return "translate("+d.update_px+","+(d.update_py-50)+")";
+        }).style("opacity", 1e-6).remove();
   }
 
   function work(args){
