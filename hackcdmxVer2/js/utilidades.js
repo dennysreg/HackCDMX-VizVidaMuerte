@@ -141,7 +141,9 @@ function DefinidorDePosiciones(){
         positions[group[i].id] = position;
       }
 
-      currX += spaceBetweenGroups;
+      //currX += spaceBetweenGroups;
+      currX = offsetX;
+      currY += h;
     }
     return positions;
 
