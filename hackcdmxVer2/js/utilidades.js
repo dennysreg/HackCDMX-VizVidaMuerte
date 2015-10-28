@@ -57,7 +57,19 @@ function classes(root)
   return {children: classes};
 }
 
+function createObjectToArray(myObject){
+  var returnArray=[];
 
+  for(var key in myObject) {
+    if(myObject.hasOwnProperty(key)) {
+        var obj = {};
+        obj.key = key;
+        obj.value = myObject[key];
+        returnArray.push(obj);
+    }
+  }
+  return returnArray;
+}
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // - - - - - - - - - - - - - - DEFINIDOR DE POSICIONES - - - - - -  - - - - - - - - -
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

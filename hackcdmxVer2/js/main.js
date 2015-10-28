@@ -449,23 +449,21 @@ function ControladorDeHexCharts(){
   //posicion
   var px,py;
 
-  var classes = [ "no-vivos","masculino","nacimientos","femenino"];
+  var classes = [ "no-vivos","hombres","nacimientos","mujeres"];
   this.updateLineasContadoras = function(_svg,anio,mes){
+
     var domHospital;
     svg = _svg;
 
     //por cada hospital
     hospitales.forEach(function(hospital){
+      debugger;
       //consigo la data especifca del hospital mes y año
       var mydata = hospitales_datos[hospital.id][anio][mes+1];
       
-      //get the array of the data
-      //recordar el orden de los datos
-      //defunciones, no vivos,masculino,nacimientos,femenino
-      var dataArray = Object.keys(mydata).map(function(_) { return mydata[_]; });
-      
+      var marcadores;
       lineScale = d3.scale.linear()
-            .domain([0,Array.max(dataArray)])
+            .domain([0,400])
             .range([0,largoLinea]);
 
 
@@ -484,12 +482,35 @@ function ControladorDeHexCharts(){
         .attr("x2",0)
         .attr("y2",function(d){return d});
 
-      //no usamos el primero pq son defunciones
-      var marcadores = domLinea.selectAll("circle").data(dataArray.splice(1,dataArray.length));
+      //sacamos el valor de defunciones porque no va a ser un circulo.
+      if(mydata.hasOwnProperty("defunciones")){
+        var totalDefunciones = mydata["defunciones"];
+        delete mydata["defunciones"];  
+
+        //aqui agregamos el elemento para las defunciones     
+        marcadores = domLinea.selectAll(".defunciones").data([totalDefunciones]);
+
+        marcadores.enter().append("path")
+          .attr("class","defunciones")
+          .attr("d", d3.svg.symbol().type("triangle-down"))
+          .attr("transform", function(d) {  return "translate(" + 0 + "," + 0 + ")"; });
+
+        marcadores.transition()
+              .duration(500)
+              .attr("transform", function(d){               
+                return "translate(" + 0 + "," + (largoLinea - lineScale(d)) + ")"
+               });
+      }
+      
+      //get the array of the data
+      var dataArray = createObjectToArray(mydata);
+
+     
+      marcadores = domLinea.selectAll("circle").data(dataArray,function(d){return d.key;});
 
       marcadores.enter()
         .append("circle")
-        .attr("class",function(d,i){return classes[i];})
+        .attr("class",function(d,i){return d.key.replace(/[^\w\*]/g,'');})
         .attr("transform", function(d) {  return "translate(" + 0 + "," + 0 + ")"; })
 
       marcadores
@@ -497,27 +518,12 @@ function ControladorDeHexCharts(){
         .transition()
             .duration(500)
             .attr("transform", function(d){ 
-              return "translate(" + 0 + "," + (largoLinea - lineScale(d)) + ")"
+              return "translate(" + 0 + "," + (largoLinea - lineScale(d.value)) + ")"
              })        
             //.style("fill",function(d,i){ return d.estado=="vivo" ?  d.color : codeColors['muerto']})        
-            .style("opacity",1.0)            ;  
+            .style("opacity",1.0);  
 
-       //aqui agregamos el elementos para las defunciones     
-      marcadores = domLinea.selectAll(".defunciones").data([dataArray[0]]);
-
-      marcadores.enter().append("path")
-        .attr("class","defunciones")
-        .attr("d", d3.svg.symbol().type("triangle-down"))
-        .style("fill", "red")
-        .attr("transform", function(d) {  return "translate(" + 0 + "," + 0 + ")"; });
-
-      marcadores.transition()
-            .duration(500)
-            .attr("transform", function(d){ 
-              
-              return "translate(" + 0 + "," + (largoLinea - lineScale(d)) + ")"
-             })  
-      
+         
       });
 
     
@@ -884,17 +890,16 @@ function visLineaTiempo(){
         d3.select(this).attr("class","onMouseOut");
       })
       .on("click",function(d,i){
-        
-        if(!this.playing){
+        this.playing = !this.playing;
+
+        if(this.playing){
           this.dateTimeInterval = setInterval(that.pr,800);
         }else{
           clearInterval(this.dateTimeInterval);
         }
 
         d3.select(this).text(
-          this.playing ? "Play" : "Pause");
-
-        this.playing = !this.playing;
+          this.playing ? "Pause" : "Play");
 
       })
       .text("Play");

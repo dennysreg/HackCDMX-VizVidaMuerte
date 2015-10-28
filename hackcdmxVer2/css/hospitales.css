@@ -27,3 +27,33 @@
 	fill:#525252;
 }
 
+.lineaContadora circle.FEMENINO{
+	fill:#fb8072;
+}
+
+.lineaContadora circle.MASCULINO{
+	fill:#80b1d3;
+}
+
+.lineaContadora circle.NOVIVOS{
+	fill:#d9d9d9;
+}
+
+.lineaContadora circle.nacimientos{
+	fill:#FFFFFF;
+	stroke: black;
+}
+
+.lineaContadora path.muertos{
+	fill:#525252;
+}
+
+.lineaContadora circle.nacimientos{
+	fill:#FFFFFF;
+	stroke: black;
+}
+
+.lineaContadora circle.NE{
+	fill:#558a86;
+
+
