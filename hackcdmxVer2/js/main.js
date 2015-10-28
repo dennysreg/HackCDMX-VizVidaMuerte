@@ -191,7 +191,7 @@ function ControladorDeEscenas(){
   this.setEscena2 = function(categoria){
     
     var arregloPorTipo = categoria=="Tipo" ? mapHospitalesPorTipo : mapHospitalesPorDelegacion; 
-    controladorHospitales.setPosicionDeDOMSHospitales(definidorDePosiciones.generaClustersDePosicionesPorTipo(100,100,1000,600,80,150,arregloPorTipo,50));
+    controladorHospitales.setPosicionDeDOMSHospitales(definidorDePosiciones.generaClustersDePosicionesPorTipo(0,0,800,400,80,150,arregloPorTipo,50));
   }
 
   //en la escena tres se muestran los datos acumulando por mes.

@@ -102,7 +102,6 @@ function DefinidorDePosiciones(){
   //regresa un arreglo con las posiciones para cada objeto por su id.
   this.generaClustersDePosicionesPorTipo = function(offsetX,offsetY,canvasW,canvasH,w,h,groups,spaceBetweenGroups){
     
-
     var positions = {};
     var position={};
     var groupCounter = 0;
@@ -128,7 +127,7 @@ function DefinidorDePosiciones(){
       }*/
 
       for(var i=0;i<group.length;i++){
-        if(currX >= canvasW)
+        if(currX >= canvasW-w)
         {
           currX = offsetX;
           currY += h;
