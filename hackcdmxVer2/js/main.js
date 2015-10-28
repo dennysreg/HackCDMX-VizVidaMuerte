@@ -1,5 +1,5 @@
 //
-var generalWidth=1000;
+var generalWidth=800;
 var generalHeight=610;
 //esta es la clase controladora de la visualizacion en general
 //controla las transiciones entre los estados de la visualizacion
