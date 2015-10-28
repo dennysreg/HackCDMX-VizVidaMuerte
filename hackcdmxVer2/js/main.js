@@ -96,9 +96,12 @@ function controlVisualizacion(){
   //cambios de escena generan cambios en las posiciones
   //y objetos visibles.
   this.escuchoCambioDeEscena = function(sceneNum,args){
-    console.log("procesando un cambio de escena.Escena:"+sceneNum+",argumentos"+args);
+    console.log("procesando un cambio de escena.Escena:"+sceneNum+",argumentos:"+args);
 
     switch(sceneNum){
+      case 1: this.controladorDeEscenas.setEscena1();
+              this.centroDeControl.enterBotonesOrdenarPorTipos();
+              break;
       case 2: this.controladorDeEscenas.setEscena2(args[0]);
               this.centroDeControl.enterBotonPorMes();
               break;
@@ -623,7 +626,12 @@ function CentroDeControl(){
 
   //crea los Botones por tipo
   this.enterBotonesOrdenarPorTipos = function(){
-   
+    //se eliminan botones previos que esten cargados en la vista
+    if(this.botones){
+      this.botones.eliminaBotones();
+    }
+    
+
     //set the data 
     var botonesData = [{nombre:"botonOrdenarPorTipo",initial_px:100 ,initial_py:200 ,update_px:100 ,update_py:50 ,w:100, h:30, imgpath:"imgs/botones/OrdenarPorTipo_",args:[2,["Tipo"]]},
                 {nombre:"botonOrdenarPorDelegacion" ,initial_px:200 ,initial_py:200 ,update_px:200 ,update_py:50 ,w:100, h:30, imgpath:"imgs/botones/OrdenarPorDelegacion_",args:[2,["Delegacion"]]}];
@@ -636,13 +644,14 @@ function CentroDeControl(){
 
   //Crea boton por mes
   this.enterBotonPorMes = function(){
-    debugger;
+    //se eliminan botones previos que esten cargados en la vista
     this.botones.eliminaBotones();
-    var botonesData = [{nombre:"botonVerPorMes",initial_px:100 ,initial_py:200 ,update_px:100 ,update_py:50 ,w:100, h:30, imgpath:"imgs/botones/OrdenarPorTipo_",args:[2,["Tipo"]]}];
+
+    var botonesData = [{nombre:"Regresar",initial_px:100 ,initial_py:200 ,update_px:100 ,update_py:50 ,w:100, h:30, imgpath:"imgs/botones/Regresar_",args:[1,[]]}];
   
     this.botones = new GrupoDeBotones();
     this.botones.setEventManager(this);
-    this.botones.enterBotones(this.groupDOM,"ordenarPor",botonesData,this.fireEvent);
+    this.botones.enterBotones(this.groupDOM,"verPorMes",botonesData,this.fireEvent);
   }
 
   
@@ -686,7 +695,7 @@ function GrupoDeBotones(){
           return "translate("+d.initial_px+","+d.initial_py+")";
         });
 
-    this.botones.transition().duration(2000).attr("transform",function(d){
+    this.botones.transition().duration(1000).attr("transform",function(d){
           return "translate("+d.update_px+","+d.update_py+")";
         });
   }
