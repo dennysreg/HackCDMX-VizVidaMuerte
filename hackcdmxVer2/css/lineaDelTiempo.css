@@ -13,12 +13,19 @@
 .losAnios{
 	width:500px;
 	padding-left: 40px;
+	display: inline-block;
 }
+
 .losAnios div{
 	float: left;
 	width:100px;
 	text-align: center;
 	cursor : pointer;
+	
+}
+
+.PlayPause{
+	display: inline-block;
 }
 
 #lineaDelTiempo .losAnios .unselected{
@@ -31,6 +38,12 @@
 	background: Gainsboro;
 }
 
+#lineaDelTiempo .losAnios .onMouseOver{
+	font: bold 12px monospace;
+	background: #558a86;
+}
+
 .vislineaDelTiempo{
 	font: 12px monospace;
 }
+

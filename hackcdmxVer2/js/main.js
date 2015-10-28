@@ -130,6 +130,7 @@ function ControlDelTiempo()
   this.largoLinea;
   this.dateTimeInterval;
   var that = this;
+
   this.iniciaControlDelTiempo = function()
   {
     this.anios = [2011,2012];
@@ -147,8 +148,7 @@ function ControlDelTiempo()
   }
 
   this.automaticIntervalTimer = function(){
-   this.dateTimeInterval = setInterval(addMonth,4000);
-
+   this.dateTimeInterval = setInterval(addMonth,800);
   }
 
   this.stopAutomaticIntervalTimer = function(){
@@ -157,7 +157,6 @@ function ControlDelTiempo()
 
   function addMonth(){
     that.visLineaTiempo.adelantaMes();
-
   }
 }
 
@@ -624,6 +623,8 @@ function CentroDeControl(){
       controlVisualizacion.escuchoCambioDeEscena(sceneNum,sceneArguments);
   }
 
+
+  
   //crea los Botones por tipo
   this.enterBotonesOrdenarPorTipos = function(){
     //se eliminan botones previos que esten cargados en la vista
@@ -633,8 +634,8 @@ function CentroDeControl(){
     
 
     //set the data 
-    var botonesData = [{nombre:"botonOrdenarPorTipo",initial_px:100 ,initial_py:200 ,update_px:100 ,update_py:50 ,w:100, h:30, imgpath:"imgs/botones/OrdenarPorTipo_",args:[2,["Tipo"]]},
-                {nombre:"botonOrdenarPorDelegacion" ,initial_px:200 ,initial_py:200 ,update_px:200 ,update_py:50 ,w:100, h:30, imgpath:"imgs/botones/OrdenarPorDelegacion_",args:[2,["Delegacion"]]}];
+    var botonesData = [{nombre:"botonOrdenarPorTipo",initial_px:200 ,initial_py:200 ,update_px:200 ,update_py:50 ,w:100, h:30, imgpath:"imgs/botones/OrdenarPorTipo_",args:[2,["Tipo"]]},
+                {nombre:"botonOrdenarPorDelegacion" ,initial_px:300 ,initial_py:200 ,update_px:300 ,update_py:50 ,w:100, h:30, imgpath:"imgs/botones/OrdenarPorDelegacion_",args:[2,["Delegacion"]]}];
      
     this.botones = new GrupoDeBotones();
     this.botones.setEventManager(this);
@@ -647,7 +648,7 @@ function CentroDeControl(){
     //se eliminan botones previos que esten cargados en la vista
     this.botones.eliminaBotones();
 
-    var botonesData = [{nombre:"Regresar",initial_px:100 ,initial_py:200 ,update_px:100 ,update_py:50 ,w:100, h:30, imgpath:"imgs/botones/Regresar_",args:[1,[]]}];
+    var botonesData = [{nombre:"Regresar",initial_px:200 ,initial_py:200 ,update_px:200 ,update_py:50 ,w:100, h:30, imgpath:"imgs/botones/Regresar_",args:[1,[]]}];
   
     this.botones = new GrupoDeBotones();
     this.botones.setEventManager(this);
@@ -737,6 +738,11 @@ function visLineaTiempo(){
 
   this.that = this;
   var that = this;
+
+  //esta variable se encarga de controlar los intervalos
+  //de llamadas cuando se oprime el boton play
+  this.dateTimeInterval;
+  this.playing = false;
   this.initLineaTiempo = function(anios,posicionMarcador){
     
     this.lineaTiempo.setInfo(anios,posicionMarcador);
@@ -749,7 +755,9 @@ function visLineaTiempo(){
     this.classname = classname;
     this.duracion = duration;
 
+    this.initBotonesDePlayPause(DOMid);
     this.initAnios(DOMid,this.lineaTiempo.anios,100);
+    
 
     var svg = d3.select(DOMid)
         .append("svg")
@@ -767,6 +775,7 @@ function visLineaTiempo(){
     var lineaTiempo = this.lineaTiempo;
     this.meseslargo = linealargo / (lineaTiempo.mesestotales-1);
     this.linealargo = linealargo;
+
 
     
     this.setCurrentAnioBlack();
@@ -808,6 +817,8 @@ function visLineaTiempo(){
                 {nombre:"botonAvanza" ,px:linealargo+13,py:-15 ,w:30, h:30, imgpath:"imgs/lineaDelTiempo/boton_paraAdelante_"}]
     initBotonesDeLosLados(".vis"+this.classname+" ."+this.classname,infoposbotones,that);
 
+    //set botones de play y pause
+
     
 
     function initMarcador(DOMid,imgpath,data,meseslargo){
@@ -840,20 +851,13 @@ function visLineaTiempo(){
         .on("mouseover",function(d){ d3.select(this).attr("xlink:href", d.imgpath+"hover.png")})
         .on("mouseout",function(d){ d3.select(this).attr("xlink:href", d.imgpath+"idle.png")})
         .on("click",function(d){
-          
           if(d.nombre == "botonAvanza"){
-            adelantaMes(lineaTiempo);
+            that.adelantaMes();
           }
           else{
-            retrasaMes(lineaTiempo);
+            that.retrasaMes();
           }
-          
-          that.setPosicionposicionMarcador();
-          that.setCurrentAnioBlack();
-
-           //AVISA AL CONTROLADOR QUE HUBO UN CAMBIO
-           //controlVisualizacion.escuchoCambioDeFecha(lineaTiempo.anios[lineaTiempo.posicionMarcador.anio],lineaTiempo.posicionMarcador.mes);
-          that.fireDateChangeEvent();  
+        
       })
         .attr("width",function(d){return d.w})
         .attr("height",function(d){return d.h})
@@ -864,9 +868,46 @@ function visLineaTiempo(){
     }
   }
 
+  this.initBotonesDePlayPause = function(DOMid){
+    
+    var dom = d3.select(DOMid);
+    var lineaTiempo1 = this.lineaTiempo;
+    
+    var grupoPlayPause = dom.append("div").attr("class","PlayPause");
+
+    grupoPlayPause.append("div")
+      .attr("id","play-btn")
+      .on("mouseover",function(d){
+        d3.select(this).attr("class","onMouseOver");
+      })
+      .on("mouseout",function(d,i){
+        d3.select(this).attr("class","onMouseOut");
+      })
+      .on("click",function(d,i){
+        
+        if(!this.playing){
+          this.dateTimeInterval = setInterval(that.pr,800);
+        }else{
+          clearInterval(this.dateTimeInterval);
+        }
+
+        d3.select(this).text(
+          this.playing ? "Play" : "Pause");
+
+        this.playing = !this.playing;
+
+      })
+      .text("Play");
+
+      this.pr = function(){
+        that.adelantaMes();
+      }
+  }
+
 
   
   this.initAnios = function(DOMid, data,espacioEntreAnios) {
+    
     var dom = d3.select(DOMid);
     var lineaTiempo = this.lineaTiempo;
 
@@ -877,6 +918,12 @@ function visLineaTiempo(){
     
       anios.enter().append("div")
         .attr("id",function(d,i){ return "anio"+i;})
+        .on("mouseover",function(d){
+          d3.select(this).attr("class","onMouseOver");
+        })
+        .on("mouseout",function(d,i){
+          that.setCurrentAnioBlack();
+        })
         .on("click",function(d,i){
           that.setCurrentAnio(lineaTiempo,i);
 
@@ -885,7 +932,7 @@ function visLineaTiempo(){
         })
         .text(function(d,i){ return d});  
     
-    
+  
   }
 
   this.setCurrentAnioBlack = function(){
@@ -906,9 +953,12 @@ function visLineaTiempo(){
   //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
   //estos metodos son accedidos por el cambio de fecha automático
   this.adelantaMes = function(){
+  
     this.lineaTiempo.addmes();
     this.setPosicionposicionMarcador();
     this.setCurrentAnioBlack();
+
+    //AVISA AL CONTROLADOR QUE HUBO UN CAMBIO
     this.fireDateChangeEvent();
   }
 
@@ -916,6 +966,8 @@ function visLineaTiempo(){
     this.lineaTiempo.retrasaMes();
     this.setPosicionposicionMarcador();
     this.setCurrentAnioBlack();
+
+    //AVISA AL CONTROLADOR QUE HUBO UN CAMBIO
     this.fireDateChangeEvent();
   }
   //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 

@@ -117,7 +117,7 @@ scale-slider circle.nob{
 scale-slider circle.shadow{
   opacity: 0.1;
 }
-div.play-btn{
+div#play-btn{
   border: 1px solid #aaa;
   background-color: white;
   color: #777;
