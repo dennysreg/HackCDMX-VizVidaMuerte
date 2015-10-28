@@ -6,3 +6,20 @@
 .wrapper-all-hospitals .nombre_del_hospital{
 	    font-size: 6px;
 }
+
+.wrapper-all-hospitals circle#vivo.mujer{
+	fill:#fb8072;
+}
+
+.wrapper-all-hospitals circle#vivo.hombre{
+	fill:#80b1d3;
+}
+
+.wrapper-all-hospitals circle#vivo.novivo{
+	fill:#d9d9d9;
+}
+
+.wrapper-all-hospitals circle#muerto.muerto{
+	fill:#525252;
+}
+
