@@ -8,6 +8,18 @@ var mapHospitalesPorDelegacion = d3.nest().key(function(d){ return d.delegacion;
 var hospitalesids = Object.keys(mapHospitales);
 
 
+var hospitales_arreglo = createObjectToArray(hospitales_datos);
+var hospitales_arreglo_2011 =hospitales_arreglo.map(
+  function(obj){
+    var rObj = {};
+      
+      rObj["key"] = obj.key;
+
+      rObj["values"] = createObjectToArray(obj.value["2011"]);
+    
+      return rObj;
+    });
+
 //utilidades
 
 var definidorDePosiciones = new DefinidorDePosiciones();
@@ -160,6 +172,29 @@ function DefinidorDePosiciones(){
     return positions;
 
   }
+
+  this.generaGridDeHexagonos = function(){
+
+  }
+
+  this.generaRenglones = function(offSetX,offSetY,h,ids){
+    var gridPositions = {};
+    var gridPosition = {};
+    var counter = 0;
+
+    while(counter < ids.length)
+    {
+      
+        gridPosition = {};
+        gridPosition.x = offSetX;
+        gridPosition.y = offSetY + (counter*h);
+
+        gridPositions[ids[counter]] = gridPosition;
+        counter++;
+    }
+
+    return gridPositions;
+  }
 }
 
 
@@ -199,7 +234,24 @@ if (!Array.prototype.last){
 
 
 
+function getHospitalsDataOfIds(ids){
+  var returnObj={};
+  ids.forEach(function(id){
+    returnObj[id] = hospitales_datos[id];
+  })
 
+  return returnObj;
+}
+
+function getHospitalsDataOfIds(ids,year){
+  var returnObj={};
+  ids.forEach(function(id){
+    
+    returnObj[id] = createObjectToArray(hospitales_datos[id][year]);
+  })
+
+  return returnObj;
+}
 //------------ARRAY--------------------
 Array.max = function( array ){
     return Math.max.apply( Math, array );

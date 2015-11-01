@@ -1,6 +1,6 @@
 //
-var generalWidth=800;
-var generalHeight=610;
+var generalWidth=1000;
+var generalHeight=1000;
 //esta es la clase controladora de la visualizacion en general
 //controla las transiciones entre los estados de la visualizacion
 //controla que elementos son visibles
@@ -14,6 +14,10 @@ function inicia(){
   controlVisualizacion.creaHTMLGeneral();  
   controlVisualizacion.iniciaElementosDOM();
 
+  var lineTimeChart = new LineTimeChart();
+  //lineTimeChart.initLineChart(,"linechart",400,100);
+  //lineTimeChart.createBordersWithDomain(0,1000);
+  //lineTimeChart.insertLines(hospitales_arreglo_2011);
   //iniciamos con la escena 1
   controlVisualizacion.comenzamos();
 }
@@ -28,15 +32,17 @@ function controlVisualizacion(){
   this.svg;
   //controlador de los elementos visuales de los hospitales
   this.controladorHospitales;
-
+  this.controladorGrupoHospitales;
   //controladores de eventos
   this.controlDelTiempo;
   this.controladorDeEscenas; 
   this.centroDeControl;
 
+
   this.iniciaControlVisualizacion = function(){
     this.controladorHospitales = new ControladorHospitales();
-    
+    this.controladorGrupoHospitales = new controladorGrupoHospitales();
+
     this.controlDelTiempo = new ControlDelTiempo();
     this.controlDelTiempo.iniciaControlDelTiempo();
     
@@ -44,16 +50,15 @@ function controlVisualizacion(){
     this.centroDeControl.initCentroDeControl();
 
     this.controladorDeEscenas = new ControladorDeEscenas();
-    this.controladorDeEscenas.iniciaControl(this.controladorHospitales);
+    this.controladorDeEscenas.iniciaControl(this.controladorHospitales,this.controladorGrupoHospitales);
   }  
 
   //inicia los dom elementos secundarios
   this.iniciaElementosDOM = function(){
     
     this.controladorHospitales.initDOMsHospitales(this.svg);
-    
-    
-  }
+    this.controladorGrupoHospitales.initDOM(this.svg);
+  } 
 
   //crea los dos elementos principales de dibujo
   //el canvas general y la linea del tiempo
@@ -168,13 +173,16 @@ function ControladorDeEscenas(){
   //contiene el controlador de elementos visuales
   var controladorHospitales;
 
-  this.iniciaControl = function(_controladorHospitales){
+  this.iniciaControl = function(_controladorHospitales,_controaldorGrupoHospitales){
     controladorHospitales = _controladorHospitales;
+    controladorGrupoHospitales = _controaldorGrupoHospitales;
   }
 
 
   this.setEscena1 = function(){
-     
+    debugger;
+    //inserta los hospitales al wrapper-all-hospitals
+    controladorHospitales.insertHospitalesToWrapper();
     //pon los hospitales en grid
     controladorHospitales.setPosicionDeDOMSHospitales(definidorDePosiciones.generaGrid(0,0,generalWidth, generalHeight,80,150, hospitalesids));
     
@@ -190,8 +198,24 @@ function ControladorDeEscenas(){
   //en la escena dos se ordenan los hospitales por delegacion o por tipo de hospital
   this.setEscena2 = function(categoria){
     
-    var arregloPorTipo = categoria=="Tipo" ? mapHospitalesPorTipo : mapHospitalesPorDelegacion; 
-    controladorHospitales.setPosicionDeDOMSHospitales(definidorDePosiciones.generaClustersDePosicionesPorTipo(0,0,800,400,80,150,arregloPorTipo,50));
+    var hospitalesPorTipo = categoria=="Tipo" ? mapHospitalesPorTipo : mapHospitalesPorDelegacion; 
+    //controladorHospitales.setPosicionDeDOMSHospitales(definidorDePosiciones.generaClustersDePosicionesPorTipo(0,0,800,400,80,150,arregloPorTipo,50));
+    var arreglo_hospitalesPorTipo = createObjectToArray(hospitalesPorTipo);
+    controladorGrupoHospitales.createGrupoDoms(categoria,arreglo_hospitalesPorTipo);
+    controladorGrupoHospitales.insertHospitalesToGroupWrapper(arreglo_hospitalesPorTipo);
+    var keys = Object.keys(hospitalesPorTipo);
+
+    controladorGrupoHospitales.setPosicionDeDOMSGrupos(
+        createObjectToArray(hospitalesPorTipo),
+        definidorDePosiciones.generaRenglones(0,0,200,keys));
+
+    //por cada grupo hacer un acomodo grid
+    debugger;
+    for(key in hospitalesPorTipo){
+      var hospitalesids = (hospitalesPorTipo[key]).map(function(h){return h.id});
+      controladorHospitales.setPosicionDeDOMSHospitales(definidorDePosiciones.generaGrid(0,0,generalWidth, generalHeight,80,150, hospitalesids));  
+    }
+    
   }
 
   //en la escena tres se muestran los datos acumulando por mes.
@@ -200,6 +224,8 @@ function ControladorDeEscenas(){
 
     circulos.transition().duration(1000).attr("transform", function(d) { 
          return "translate(" + 0 + "," + 0 + ")"; });
+
+
   }
 
 }
@@ -216,14 +242,14 @@ function ControladorHospitales(){
   var DOMsHexCharts = {};
   var DOMsLineasContadoras = {};
   var DOMsLeyendas = {};
-
+  var grupoHospitales;
   this.controladorDeHexCharts = new ControladorDeHexCharts();
   this.controladorDeLineasContadoras = new ControladorDeLineasContadoras();
   this.controladorDeNombreDeHospitales = new ControladorNombresDeHospitales();
 
   this.initDOMsHospitales = function(svg){
   
-    var grupoHospitales = svg.append("g").attr("class","wrapper-all-hospitals");
+    grupoHospitales = svg.append("g").attr("class","wrapper-all-hospitals");
     var hospitalDomElement;
     var nombreHospitalDomElement;
     var hexChartDOMElement;
@@ -256,6 +282,11 @@ function ControladorHospitales(){
 
   }
 
+  this.insertHospitalesToWrapper = function(){
+    for(var key in DOMsHospitales){
+      $(".wrapper-hospital#"+ key).appendTo(grupoHospitales);
+    }
+  }
 
   this.updateHexCharts = function(svg,anio,mes)
   {
@@ -267,8 +298,15 @@ function ControladorHospitales(){
     this.controladorDeLineasContadoras.updateLineasContadoras(svg,anio,mes);
   }
 
+  this.setPosicionDeDOMSHospitales = function(posiciones){
+    for(var id in posiciones){
+        domHospital = DOMsHospitales[id];
+        domHospital.transition().duration(800).attr("transform", function(d) { 
+         return "translate(" + posiciones[id].x + "," + posiciones[id].y + ")"; });
+    }
+  }
 
-
+/*
   this.setPosicionDeDOMSHospitales = function(posiciones){
     hospitalesids.forEach(function(id){
         domHospital = DOMsHospitales[id];
@@ -277,6 +315,7 @@ function ControladorHospitales(){
       });
       
   }
+*/
 
 }
 
@@ -457,7 +496,7 @@ function ControladorDeHexCharts(){
 
     //por cada hospital
     hospitales.forEach(function(hospital){
-      debugger;
+      
       //consigo la data especifca del hospital mes y año
       var mydata = hospitales_datos[hospital.id][anio][mes+1];
       
@@ -654,12 +693,14 @@ function CentroDeControl(){
     //se eliminan botones previos que esten cargados en la vista
     this.botones.eliminaBotones();
 
-    var botonesData = [{nombre:"Regresar",initial_px:200 ,initial_py:200 ,update_px:200 ,update_py:50 ,w:100, h:30, imgpath:"imgs/botones/Regresar_",args:[1,[]]}];
+    var botonesData = [{nombre:"Regresar",initial_px:200 ,initial_py:200 ,update_px:200 ,update_py:50 ,w:100, h:30, imgpath:"imgs/botones/Regresar_",args:[1,[]]},
+    {nombre:"verPorMes",initial_px:300 ,initial_py:300 ,update_px:400 ,update_py:50 ,w:100, h:30, imgpath:"imgs/botones/Regresar_",args:[1,[]]}];
   
     this.botones = new GrupoDeBotones();
     this.botones.setEventManager(this);
     this.botones.enterBotones(this.groupDOM,"verPorMes",botonesData,this.fireEvent);
   }
+
 
   
 
@@ -713,7 +754,8 @@ function GrupoDeBotones(){
     var botones = this.svgDOM.selectAll("."+this.classname).data(data);
 
     botones.data(data);
-    debugger;
+    
+
     botones.exit().transition().duration(1000).attr("transform",function(d){
           return "translate("+d.update_px+","+(d.update_py-50)+")";
         }).style("opacity", 1e-6).remove();
@@ -722,6 +764,272 @@ function GrupoDeBotones(){
   function work(args){
     eventManager.fireEvent(args);
   }
+}
+
+
+function ControladorLineCharts(){
+  this.svg;
+  this.doms;
+
+  this.init = function(){   
+
+  }
+
+  this.initVis = function(data){
+
+  }
+
+}
+
+function controladorGrupoHospitales(){
+
+  var DOMsGrupos={};
+  var DOMslineCharts={};
+  this.byCategory = {};
+  var grupoHospitales;
+  this.groupData;
+
+
+  this.initDOM = function(svg,portipo,groupData){    
+    this.wrapperDOM = svg.append("g").attr("class","wrapper-all-groups").attr("por",portipo);
+    grupoHospitales = new GrupoDeHospitales();
+    grupoHospitales.init();
+  }
+
+  this.createGrupoDoms = function (portipo,groupData){
+    var that = this;
+    this.groupData = groupData;
+    var wrapperDOM = this.wrapperDOM;
+    var grupoDOM;
+    var lineChartDOM;
+    //solo si no se ha trabajado con esta
+    //categoria crea los doms
+    if(typeof this.byCategory[portipo]==='undefined'){
+      this.byCategory[portipo] = true;
+
+
+      groupData.forEach(function(grupo){
+        
+       grupoDOM = wrapperDOM.append("g")
+          .attr("class","wrapper-group")
+          .attr("id",grupo.key.replace(/[^\w\*]/g,''));
+
+      
+       //inserta a los doms de los hospitales a este grupo
+       // grupo.value.forEach(function(h){
+       //   $(".wrapper-hospital#"+h.id).appendTo(grupoDOM);
+       // })
+      
+        //los grupos contienen un dom para las line charts
+        lineChartDOM = grupoDOM.append("g")
+          .attr("class","lineChart")
+          .attr("id",grupo.key);
+
+        DOMsGrupos[grupo.key] = grupoDOM;
+        DOMslineCharts[grupo.key] = lineChartDOM;
+      });
+      this.populate();
+    }
+
+  }
+
+  this.insertHospitalesToGroupWrapper = function(groupData){
+    debugger;
+    var grupoDOM;
+    groupData.forEach(function(grupo){
+      grupoDOM = DOMsGrupos[grupo.key];
+      grupo.value.forEach(function(h){
+         $(".wrapper-hospital#"+h.id).appendTo(grupoDOM);
+       });
+    });
+  }
+
+  this.setPosicionDeDOMSGrupos = function(groupData,posiciones){
+ 
+    var domgrupo,id;
+    groupData.forEach(function(grupo){
+        id = grupo.key;
+        domgrupo  = DOMsGrupos[id];
+        domgrupo.transition().duration(800).attr("transform", function(d) { 
+         return "translate(" + posiciones[id].x + "," + posiciones[id].y + ")"; })
+      });
+      
+  }
+
+this.resetPosicionDeDOMSGrupos = function(groupData){
+    debugger;
+    var domgrupo,id;
+    groupData.forEach(function(grupo){
+        id = grupo.key;
+        domgrupo  = DOMsGrupos[id];
+        domgrupo.transition().duration(800).attr("transform", function(d) { 
+         return "translate(" + posiciones[id].x + "," + posiciones[id].y + ")"; })
+      });
+      
+  }
+  this.populate = function(){
+    this.groupData.forEach(function(grupo){
+        id = grupo.key;
+        domgrupo  = DOMsGrupos[id];
+       
+        grupoHospitales.createTitle(domgrupo,grupo.key)
+        
+        var dataHosps = createObjectToArray(
+          getHospitalsDataOfIds(
+            grupo.value.map(
+              function(m){
+                return m.id;
+              }),"2011"));
+        
+        domLineChart = DOMslineCharts[id];
+        grupoHospitales.createLineChart(domLineChart,dataHosps);
+        grupoHospitales.updateLineChart(domLineChart,dataHosps);
+      });
+  }
+
+}
+
+function GrupoDeHospitales(){
+  this.dom;
+  this.data;
+  this.lineTimeChart;
+  this.title;
+  this.hexCharts;
+
+  this.init = function(){
+
+    this.lineTimeChart = new LineTimeChart();
+    
+  }
+
+  this.createTitle = function(dom,title){
+    this.title = title;
+    dom.append("text").text(title);
+  }
+
+  this.setPosicionesHexCharts = function(){
+
+  }
+
+  this.createLineChart = function(dom,data){
+    this.lineTimeChart.initLineChart(dom,"lineChart",400,100);
+    this.lineTimeChart.createBorders(data);
+  }
+  this.updateLineChart = function(dom,data){
+    this.lineTimeChart.insertLines(dom,data);
+  }
+}
+
+function LineTimeChart(){
+  this.dom;
+  this.data;
+  this.classname;
+
+  this.x;
+  this.y;
+  this.year = 2000;
+
+  this.xAxis;
+  this.yAxis;
+  this.line;
+
+  this.width;
+  this.height;
+
+  var that = this;
+
+  this.initLineChart = function(DOMParent,classname,width,height){
+    this.width = width;
+    this.height = height;
+
+    this.x = d3.time.scale()
+    .range([0, width]);
+
+    this.y = d3.scale.linear()
+    .range([height, 0]);
+
+    this.xAxis = d3.svg.axis()
+      .scale(this.x)
+      .orient("bottom");
+
+    this.yAxis = d3.svg.axis()
+      .scale(this.y)
+      .orient("left");
+
+    this.dom = DOMParent.append("g").attr("class",classname);
+    
+  }
+
+  this.setYear = function(year){
+    this.year = year;
+  }
+
+  this.createBordersWithDomain = function(ymin,ymax){
+    // define the x scale (horizontal)
+    var mindate = new Date(this.year,0),
+        maxdate = new Date(this.year,11);
+
+    this.x.domain([mindate, maxdate]);
+    this.y.domain([ymin,ymax]);
+
+    this.dom.append("g")
+      .attr("class", "x axis")
+      .attr("transform", "translate(0," + this.height + ")")
+      .call(this.xAxis);
+
+    this.dom.append("g")
+      .attr("class", "y axis")
+      .call(this.yAxis);
+  }
+
+  this.createBorders = function(data){
+  
+    var ymin =d3.min(data,function(h){
+
+        return d3.min(h.value,function(m){
+          
+          return Math.min(m.value.nacimientos,m.value.defunciones);
+        })
+      });
+
+    var ymax = d3.max(data,function(h){
+        return d3.max(h.value,function(m){
+          return Math.max(m.value.nacimientos,m.value.defunciones);
+        })
+      });
+
+    this.createBordersWithDomain(ymin,ymax);
+  }
+
+  this.insertLines = function(dom,data){
+    var x = this.x;
+    var y = this.y;
+    
+    var hospital = dom.selectAll(".lineaNacimientos")
+      .data(data)
+      .enter().append("g")
+      .attr("class", function(h){
+        return h.key;
+      });
+
+    
+
+    line = d3.svg.line()
+    .interpolate("linear")
+    .x(function(d) { return x(new Date(2000,d.key-1)); })
+    .y(function(d) { 
+      return y(d.value.nacimientos);});
+
+
+    hospital.append("path")
+      .attr("class", "line")
+      .attr("d",function(d){
+  
+        return line(d.value);
+      })
+
+  }
+
 }
 
 
