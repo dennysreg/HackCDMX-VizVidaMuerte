@@ -147,7 +147,7 @@ div#visualizacion {
 
 
 
- 
+
 .axis path,
 .axis line {
   fill: none;
@@ -162,5 +162,12 @@ div#visualizacion {
 .line {
   fill: none;
   stroke: steelblue;
-  stroke-width: 1.5px;
+  stroke-width: 1px;
+  stroke-opacity: 0.5;
+}
+
+
+
+.line #mouseover{
+  stroke-opacity: 1;
 }

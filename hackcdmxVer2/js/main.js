@@ -180,11 +180,8 @@ function ControladorDeEscenas(){
 
 
   this.setEscena1 = function(){
-    debugger;
-    //inserta los hospitales al wrapper-all-hospitals
-    controladorHospitales.insertHospitalesToWrapper();
-    //pon los hospitales en grid
-    controladorHospitales.setPosicionDeDOMSHospitales(definidorDePosiciones.generaGrid(0,0,generalWidth, generalHeight,80,150, hospitalesids));
+   
+    controladorGrupoHospitales.resetPosicionDeDOMSGrupos();
     
     //define el diametro de los hexagonos
     //y el radio de los circulos
@@ -193,6 +190,20 @@ function ControladorDeEscenas(){
     //pon las lineas Contadoras de un lado 
     controladorHospitales.controladorDeLineasContadoras.movePosicionLineasContadoras(75,90);
     controladorHospitales.controladorDeLineasContadoras.setLargoLinea(50);
+
+    
+    //inserta los hospitales al wrapper-all-hospitals
+    setTimeout(function(){
+      //your code to be executed after 1 seconds
+      controladorHospitales.insertHospitalesToWrapper();
+    }, 1000); 
+    
+
+    //pon los hospitales en grid
+    controladorHospitales.setPosicionDeDOMSHospitales(definidorDePosiciones.generaGrid(0,0,generalWidth, generalHeight,80,150, hospitalesids));
+    
+
+    controladorHospitales.addChangeOpacityListeners();
   }
 
   //en la escena dos se ordenan los hospitales por delegacion o por tipo de hospital
@@ -210,7 +221,7 @@ function ControladorDeEscenas(){
         definidorDePosiciones.generaRenglones(0,0,200,keys));
 
     //por cada grupo hacer un acomodo grid
-    debugger;
+    
     for(key in hospitalesPorTipo){
       var hospitalesids = (hospitalesPorTipo[key]).map(function(h){return h.id});
       controladorHospitales.setPosicionDeDOMSHospitales(definidorDePosiciones.generaGrid(0,0,generalWidth, generalHeight,80,150, hospitalesids));  
@@ -256,9 +267,12 @@ function ControladorHospitales(){
     var lineaContadoraDOMElement;
     var leyendasDOMElement;
     hospitales.forEach(function(hospital){
+        
          hospitalDomElement = grupoHospitales.append("g")
           .attr("class","wrapper-hospital")
           .attr("id",hospital.id);
+
+
           //cada hospital contiene un título
           nombreHospitalDomElement = hospitalDomElement.append("g").attr("class","nombre");
           //cada hospital contiene un hexchart
@@ -304,6 +318,16 @@ function ControladorHospitales(){
         domHospital.transition().duration(800).attr("transform", function(d) { 
          return "translate(" + posiciones[id].x + "," + posiciones[id].y + ")"; });
     }
+  }
+
+  this.addChangeOpacityListeners = function(){
+    for(var id in DOMsHospitales){
+      var ido = id;
+      DOMsHospitales[id].on("mouseenter",function(d){
+        debugger;
+      });
+    }
+
   }
 
 /*
@@ -834,7 +858,7 @@ function controladorGrupoHospitales(){
   }
 
   this.insertHospitalesToGroupWrapper = function(groupData){
-    debugger;
+   
     var grupoDOM;
     groupData.forEach(function(grupo){
       grupoDOM = DOMsGrupos[grupo.key];
@@ -856,16 +880,12 @@ function controladorGrupoHospitales(){
       
   }
 
-this.resetPosicionDeDOMSGrupos = function(groupData){
-    debugger;
-    var domgrupo,id;
-    groupData.forEach(function(grupo){
-        id = grupo.key;
-        domgrupo  = DOMsGrupos[id];
-        domgrupo.transition().duration(800).attr("transform", function(d) { 
-         return "translate(" + posiciones[id].x + "," + posiciones[id].y + ")"; })
-      });
-      
+this.resetPosicionDeDOMSGrupos = function(){
+    
+    var domsgrupos = d3.selectAll(".wrapper-group");
+
+    domsgrupos.transition().duration(800).attr("transform", function(d) { 
+         return "translate(0,0)"; });  
   }
   this.populate = function(){
     this.groupData.forEach(function(grupo){
@@ -1373,3 +1393,5 @@ function LineaTiempo(){
     return this.anios[this.posicionMarcador.anio];
   }
 }
+
+
