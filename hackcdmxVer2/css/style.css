@@ -159,15 +159,18 @@ div#visualizacion {
   display: none;
 }
 
-.line {
+.line, .line[mouse=out]{
   fill: none;
   stroke: steelblue;
   stroke-width: 1px;
-  stroke-opacity: 0.5;
+  stroke-opacity: 0.3;
 }
 
 
 
-.line #mouseover{
+.line[mouse=in]{
+  fill: none;
+  stroke: steelblue;
+  stroke-width: 1px;
   stroke-opacity: 1;
 }

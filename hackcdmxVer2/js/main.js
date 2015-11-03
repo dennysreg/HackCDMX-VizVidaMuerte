@@ -322,9 +322,13 @@ function ControladorHospitales(){
 
   this.addChangeOpacityListeners = function(){
     for(var id in DOMsHospitales){
-      var ido = id;
+      
       DOMsHospitales[id].on("mouseenter",function(d){
-        debugger;
+        var hospitaldata = mapHospitales[this.id][0];
+        $("#"+hospitaldata.subtipo.replace(/[^\w\*]/g,'')+".lineChart > g."+hospitaldata.id+" > path").attr("mouse","in");
+      }).on("mouseout",function(d){
+        var hospitaldata = mapHospitales[this.id][0];
+        $("#"+hospitaldata.subtipo.replace(/[^\w\*]/g,'')+".lineChart > g."+hospitaldata.id+" > path").attr("mouse","out");        
       });
     }
 
@@ -847,7 +851,7 @@ function controladorGrupoHospitales(){
         //los grupos contienen un dom para las line charts
         lineChartDOM = grupoDOM.append("g")
           .attr("class","lineChart")
-          .attr("id",grupo.key);
+          .attr("id",grupo.key.replace(/[^\w\*]/g,''));
 
         DOMsGrupos[grupo.key] = grupoDOM;
         DOMslineCharts[grupo.key] = lineChartDOM;
@@ -976,7 +980,7 @@ function LineTimeChart(){
       .scale(this.y)
       .orient("left");
 
-    this.dom = DOMParent.append("g").attr("class",classname);
+    this.dom = DOMParent;
     
   }
 
