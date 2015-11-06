@@ -56,4 +56,8 @@
 .lineaContadora circle.NE{
 	fill:#558a86;
 
+}
 
+.wrapper-all-hospitals path.backHexagons{
+	fill:white;
+}

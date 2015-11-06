@@ -294,6 +294,10 @@ function ControladorHospitales(){
       this.controladorDeLineasContadoras.setLineasContadorasDOMs(DOMsLineasContadoras);
       this.controladorDeNombreDeHospitales.setNombresDOMs(DOMsNombresHospitales);
 
+      //inicializa los elementos dom internamente en los controladores
+   
+      this.controladorDeHexCharts.initHexCharts();
+
   }
 
   this.insertHospitalesToWrapper = function(){
@@ -323,36 +327,21 @@ function ControladorHospitales(){
   this.addChangeOpacityListeners = function(){
     for(var id in DOMsHospitales){
       
-      DOMsHospitales[id].on("mouseenter",function(d){
+      DOMsHospitales[id]
+      .on("mouseenter",function(d){
         var hospitaldata = mapHospitales[this.id][0];
         $("#"+hospitaldata.subtipo.replace(/[^\w\*]/g,'')+".lineChart > g."+hospitaldata.id+" > path").attr("mouse","in");
-      }).on("mouseout",function(d){
+      })
+      .on("mouseover",function(d){
+        var hospitaldata = mapHospitales[this.id][0];
+        $("#"+hospitaldata.subtipo.replace(/[^\w\*]/g,'')+".lineChart > g."+hospitaldata.id+" > path").attr("mouse","in");
+      })
+      .on("mouseout",function(d){
         var hospitaldata = mapHospitales[this.id][0];
         $("#"+hospitaldata.subtipo.replace(/[^\w\*]/g,'')+".lineChart > g."+hospitaldata.id+" > path").attr("mouse","out");        
       });
     }
-
   }
-
-/*
-  this.setPosicionDeDOMSHospitales = function(posiciones){
-    hospitalesids.forEach(function(id){
-        domHospital = DOMsHospitales[id];
-        domHospital.transition().duration(800).attr("transform", function(d) { 
-         return "translate(" + posiciones[id].x + "," + posiciones[id].y + ")"; })
-      });
-      
-  }
-*/
-
-}
-
-//en esta funcion se controlaran las posiciones y tamaños
-//a asignar a los elementos del hospital.
-function ControladorPosicionesTamanos()
-{
-  
-
 }
 
 //Cada hospital contiene un hex chart
@@ -373,16 +362,41 @@ function ControladorDeHexCharts(){
   var bubble_radius=4;
 
   var row={};
-  var nodes = {};
+  var nodes={};
 
   var svg,DOMsHospitales,DOMsHexCharts;
        
-      
-   //magia d3 no hay que inicializar nada. Sólo seleccionar y los joints se 
-  //hacen sólos.
+  var hexbin;
+
+  var addBackHexagonfunction;
+  //here we initialize the elements of the hex charts
+  this.initHexCharts = function ()
+  {
+    hexbin = d3.hexbin();
+
+         
+    
+  }
+
+  this.addBackHexagon = function(domHospital){
+       hexbin = d3.hexbin()
+        .radius(diameter);
+
+       var backHexagons = domHospital.selectAll(".backHexagons").data([1]);
+        
+        backHexagons.enter().append("path")
+          .attr("class","backHexagons")
+          .attr("d", hexbin.hexagon(diameter/2));
+
+        backHexagons
+          .attr("transform","translate("+diameter/2+","+diameter/2+") rotate(90)");
+}
+
+
+  //d3
   this.updateHexsHospitales= function(_svg,anio,mes){
     svg = _svg;
-
+    addBackHexagonfunction = this.addBackHexagon;
   
     hospitales.forEach(function(hospital){
      
@@ -442,15 +456,17 @@ function ControladorDeHexCharts(){
 
       //tomo el dom element del grupo para el hex del hospital
        var domHospital = DOMsHexCharts[hospital.id];
-
-       domHospital.attr("transform","translate(" + 0 + "," + 20+ ")");
+     
+        domHospital.attr("transform","translate(0,20)");
+       addBackHexagonfunction(domHospital);
+      // domHospital.attr("transform","translate(" + 0 + "," + 20+ ")");
        //selecciono sólo los circulos del hospital correspondiente
        //porque el domHospital es el DOM especifico de ese hospital
        var bubbleHospital = 
           domHospital.selectAll("circle")
          .data(data_bubble);
 
-      //magia d3
+      //d3
       bubbleHospital
         .enter()
         .append("circle")
@@ -470,16 +486,17 @@ function ControladorDeHexCharts(){
             //.style("stroke-width", 0.5)
             .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; })
 
-     bubbleHospital
-        .exit()
-        .transition()
-        .duration(delay)
-        .style("opacity",0.0)
-        //.attr("r",0)
-        .remove();     
-
+       bubbleHospital
+          .exit()
+          .transition()
+          .duration(delay)
+          .style("opacity",0.0)
+          //.attr("r",0)
+          .remove();     
     });
-  
+    
+
+
   }
 
   this.setHexDoms = function(_DOMsHexCharts){
@@ -493,8 +510,8 @@ function ControladorDeHexCharts(){
     .sort(null)
     .size([diameter, diameter])
     .padding(0.1);
-
   };
+
   this.setRadius = function(r){
     bubble_radius = r;
   };
@@ -628,10 +645,16 @@ function ControladorNombresDeHospitales(){
      hospitales.forEach(function(hospital){
         //consigue el DOM asignado para el nombre del hospital por su id
         var domNombre = DOMsNombresHospitales[hospital.id];
+        //colocalo
+        
+
+
         var title = rompeLineas(hospital.Nombre,25);
 
         var nombre = domNombre.selectAll("text").data(title);
-    
+          
+          
+
           nombre.enter().append("text")
             .attr("class","nombre_del_hospital")
             .attr("dx",50)
