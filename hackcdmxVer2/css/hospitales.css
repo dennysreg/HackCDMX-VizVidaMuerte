@@ -1,29 +1,29 @@
-.wrapper-all-hospitals .lineaContadora .lineaCentral
+ .lineaContadora .lineaCentral
 {
 	stroke:black;
 }
 
-.wrapper-all-hospitals .nombre_del_hospital{
+text.nombre_del_hospital{
 	    font-size: 6px;
 }
 
-.wrapper-all-hospitals circle#vivo.mujer{
+ circle#vivo.mujer{
 	fill:#fb8072;
 }
 
-.wrapper-all-hospitals circle#vivo.hombre{
+ circle#vivo.hombre{
 	fill:#80b1d3;
 }
 
-.wrapper-all-hospitals circle#vivo.ne{
+ circle#vivo.ne{
 	fill:#558a86;
 }
 
-.wrapper-all-hospitals circle#vivo.novivo{
+ circle#vivo.novivo{
 	fill:#d9d9d9;
 }
 
-.wrapper-all-hospitals circle#muerto.muerto{
+ circle#muerto.muerto{
 	fill:#525252;
 }
 
@@ -58,6 +58,14 @@
 
 }
 
-.wrapper-all-hospitals path.backHexagons{
+ path.backHexagons{
 	fill:white;
+}
+
+.lineChart{
+	font: 12px monospace;
+}
+
+.grouptitle{
+	font: 20px monospace;
 }

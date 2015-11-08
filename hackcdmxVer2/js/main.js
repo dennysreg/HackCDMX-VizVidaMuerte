@@ -107,7 +107,10 @@ function controlVisualizacion(){
       case 1: this.controladorDeEscenas.setEscena1();
               this.centroDeControl.enterBotonesOrdenarPorTipos();
               break;
-      case 2: this.controladorDeEscenas.setEscena2(args[0]);
+      case 2: 
+              this.controladorDeEscenas.setEscena2(
+                args[0],
+                this.controlDelTiempo.getCurrentAnio());
               this.centroDeControl.enterBotonPorMes();
               break;
     }
@@ -119,7 +122,7 @@ function controlVisualizacion(){
   {
    this.controladorHospitales.updateHexCharts(this.svg,anio,mes);
    this.controladorHospitales.updateLineasContadoras(this.svg,anio,mes); 
-   
+   this.controladorGrupoHospitales.populate(anio);
   }
 
 }
@@ -163,6 +166,11 @@ function ControlDelTiempo()
   function addMonth(){
     that.visLineaTiempo.adelantaMes();
   }
+
+  this.getCurrentAnio = function(){
+    return this.visLineaTiempo.lineaTiempo.getCurrentAnio();
+  }
+
 }
 
 
@@ -181,6 +189,8 @@ function ControladorDeEscenas(){
 
   this.setEscena1 = function(){
    
+    //esconde line charts
+    controladorGrupoHospitales.hideLineCharts();   
     controladorGrupoHospitales.resetPosicionDeDOMSGrupos();
     
     //define el diametro de los hexagonos
@@ -191,29 +201,31 @@ function ControladorDeEscenas(){
     controladorHospitales.controladorDeLineasContadoras.movePosicionLineasContadoras(75,90);
     controladorHospitales.controladorDeLineasContadoras.setLargoLinea(50);
 
-    
     //inserta los hospitales al wrapper-all-hospitals
+    //el contador es para darle tiempo a que los otros 
+    //g contenedores de hospitales regresen a la posición (0,0)
+    //y no se vea un brinco.
     setTimeout(function(){
-      //your code to be executed after 1 seconds
       controladorHospitales.insertHospitalesToWrapper();
     }, 1000); 
     
 
     //pon los hospitales en grid
     controladorHospitales.setPosicionDeDOMSHospitales(definidorDePosiciones.generaGrid(0,0,generalWidth, generalHeight,80,150, hospitalesids));
-    
 
-    controladorHospitales.addChangeOpacityListeners();
   }
 
   //en la escena dos se ordenan los hospitales por delegacion o por tipo de hospital
-  this.setEscena2 = function(categoria){
+  this.setEscena2 = function(categoria,anio){
     
     var hospitalesPorTipo = categoria=="Tipo" ? mapHospitalesPorTipo : mapHospitalesPorDelegacion; 
+    
     //controladorHospitales.setPosicionDeDOMSHospitales(definidorDePosiciones.generaClustersDePosicionesPorTipo(0,0,800,400,80,150,arregloPorTipo,50));
     var arreglo_hospitalesPorTipo = createObjectToArray(hospitalesPorTipo);
-    controladorGrupoHospitales.createGrupoDoms(categoria,arreglo_hospitalesPorTipo);
+    controladorGrupoHospitales.createGrupoDoms(categoria,arreglo_hospitalesPorTipo,anio);
     controladorGrupoHospitales.insertHospitalesToGroupWrapper(arreglo_hospitalesPorTipo);
+    controladorGrupoHospitales.showLineCharts(categoria);
+    
     var keys = Object.keys(hospitalesPorTipo);
 
     controladorGrupoHospitales.setPosicionDeDOMSGrupos(
@@ -221,12 +233,11 @@ function ControladorDeEscenas(){
         definidorDePosiciones.generaRenglones(0,0,200,keys));
 
     //por cada grupo hacer un acomodo grid
-    
     for(key in hospitalesPorTipo){
       var hospitalesids = (hospitalesPorTipo[key]).map(function(h){return h.id});
       controladorHospitales.setPosicionDeDOMSHospitales(definidorDePosiciones.generaGrid(0,0,generalWidth, generalHeight,80,150, hospitalesids));  
     }
-    
+    controladorHospitales.addChangeOpacityListeners();
   }
 
   //en la escena tres se muestran los datos acumulando por mes.
@@ -330,15 +341,19 @@ function ControladorHospitales(){
       DOMsHospitales[id]
       .on("mouseenter",function(d){
         var hospitaldata = mapHospitales[this.id][0];
-        $("#"+hospitaldata.subtipo.replace(/[^\w\*]/g,'')+".lineChart > g."+hospitaldata.id+" > path").attr("mouse","in");
+        
+        $("#"+hospitaldata.subtipo.replace(/[^\w\*]/g,'')+".lineChart > [hospitalid='"+hospitaldata.id+"'] > path").attr("mouse","in");
+        $("#"+hospitaldata.delegacion.replace(/[^\w\*]/g,'')+".lineChart > [hospitalid='"+hospitaldata.id+"'] > path").attr("mouse","in");
       })
       .on("mouseover",function(d){
         var hospitaldata = mapHospitales[this.id][0];
-        $("#"+hospitaldata.subtipo.replace(/[^\w\*]/g,'')+".lineChart > g."+hospitaldata.id+" > path").attr("mouse","in");
+        $("#"+hospitaldata.subtipo.replace(/[^\w\*]/g,'')+".lineChart > [hospitalid='"+hospitaldata.id+"'] > path").attr("mouse","in");
+        $("#"+hospitaldata.delegacion.replace(/[^\w\*]/g,'')+".lineChart > [hospitalid='"+hospitaldata.id+"'] > path").attr("mouse","in");
       })
       .on("mouseout",function(d){
         var hospitaldata = mapHospitales[this.id][0];
-        $("#"+hospitaldata.subtipo.replace(/[^\w\*]/g,'')+".lineChart > g."+hospitaldata.id+" > path").attr("mouse","out");        
+        $("#"+hospitaldata.subtipo.replace(/[^\w\*]/g,'')+".lineChart > [hospitalid='"+hospitaldata.id+"'] > path").attr("mouse","out");
+        $("#"+hospitaldata.delegacion.replace(/[^\w\*]/g,'')+".lineChart > [hospitalid='"+hospitaldata.id+"'] > path").attr("mouse","out");        
       });
     }
   }
@@ -847,7 +862,7 @@ function controladorGrupoHospitales(){
     grupoHospitales.init();
   }
 
-  this.createGrupoDoms = function (portipo,groupData){
+  this.createGrupoDoms = function (portipo,groupData,anio){
     var that = this;
     this.groupData = groupData;
     var wrapperDOM = this.wrapperDOM;
@@ -864,28 +879,25 @@ function controladorGrupoHospitales(){
        grupoDOM = wrapperDOM.append("g")
           .attr("class","wrapper-group")
           .attr("id",grupo.key.replace(/[^\w\*]/g,''));
-
-      
-       //inserta a los doms de los hospitales a este grupo
-       // grupo.value.forEach(function(h){
-       //   $(".wrapper-hospital#"+h.id).appendTo(grupoDOM);
-       // })
       
         //los grupos contienen un dom para las line charts
         lineChartDOM = grupoDOM.append("g")
           .attr("class","lineChart")
+          .attr("tipo",portipo)
           .attr("id",grupo.key.replace(/[^\w\*]/g,''));
+
+        grupoHospitales.createTitle(grupoDOM,grupo.key);
 
         DOMsGrupos[grupo.key] = grupoDOM;
         DOMslineCharts[grupo.key] = lineChartDOM;
       });
-      this.populate();
     }
+    //muestra las line charts de esta categoria
 
+    this.populate(anio);
   }
 
   this.insertHospitalesToGroupWrapper = function(groupData){
-   
     var grupoDOM;
     groupData.forEach(function(grupo){
       grupoDOM = DOMsGrupos[grupo.key];
@@ -896,15 +908,13 @@ function controladorGrupoHospitales(){
   }
 
   this.setPosicionDeDOMSGrupos = function(groupData,posiciones){
- 
     var domgrupo,id;
     groupData.forEach(function(grupo){
         id = grupo.key;
         domgrupo  = DOMsGrupos[id];
         domgrupo.transition().duration(800).attr("transform", function(d) { 
          return "translate(" + posiciones[id].x + "," + posiciones[id].y + ")"; })
-      });
-      
+      });   
   }
 
 this.resetPosicionDeDOMSGrupos = function(){
@@ -914,25 +924,47 @@ this.resetPosicionDeDOMSGrupos = function(){
     domsgrupos.transition().duration(800).attr("transform", function(d) { 
          return "translate(0,0)"; });  
   }
-  this.populate = function(){
+
+  this.populate = function(anio){
+
     this.groupData.forEach(function(grupo){
         id = grupo.key;
         domgrupo  = DOMsGrupos[id];
-       
-        grupoHospitales.createTitle(domgrupo,grupo.key)
         
         var dataHosps = createObjectToArray(
           getHospitalsDataOfIds(
             grupo.value.map(
               function(m){
                 return m.id;
-              }),"2011"));
+              }),anio));
         
         domLineChart = DOMslineCharts[id];
+
         grupoHospitales.createLineChart(domLineChart,dataHosps);
         grupoHospitales.updateLineChart(domLineChart,dataHosps);
       });
   }
+
+  this.hideLineCharts = function(){
+    this.setLineChartsOpacity(0);
+  }
+
+  this.showAllLineCharts = function(){
+    this.setLineChartsOpacity(1);
+  }
+
+  this.showLineCharts = function(portipo){
+
+    var linecharts = d3.selectAll('[tipo='+portipo+']');
+    linecharts.attr("opacity",1);  
+  }
+
+  this.setLineChartsOpacity = function(opacity){
+    for(var key in DOMslineCharts){
+      DOMslineCharts[key].attr("opacity",opacity);
+    }
+  }
+
 
 }
 
@@ -951,7 +983,7 @@ function GrupoDeHospitales(){
 
   this.createTitle = function(dom,title){
     this.title = title;
-    dom.append("text").text(title);
+    dom.append("text").attr("class","grouptitle").text(title);
   }
 
   this.setPosicionesHexCharts = function(){
@@ -1052,15 +1084,6 @@ function LineTimeChart(){
     var x = this.x;
     var y = this.y;
     
-    var hospital = dom.selectAll(".lineaNacimientos")
-      .data(data)
-      .enter().append("g")
-      .attr("class", function(h){
-        return h.key;
-      });
-
-    
-
     line = d3.svg.line()
     .interpolate("linear")
     .x(function(d) { return x(new Date(2000,d.key-1)); })
@@ -1068,13 +1091,27 @@ function LineTimeChart(){
       return y(d.value.nacimientos);});
 
 
-    hospital.append("path")
-      .attr("class", "line")
-      .attr("d",function(d){
-  
-        return line(d.value);
-      })
+    var hospital = dom.selectAll("#lineaNacimientos")
+      .data(data);
 
+     hospital.transition().delay(800)
+      .attr("d",function(d){
+        return line(d.value);
+      });
+
+
+    hospital.enter().append("g")
+      .attr("hospitalid", function(h){
+        return h.key;})
+      .append("path")
+      .attr("class", "line")
+      .attr("id","lineaNacimientos")
+      .attr("d",function(d){
+        return line(d.value);
+      });
+
+ 
+   
   }
 
 }
@@ -1416,7 +1453,7 @@ function LineaTiempo(){
     return 12;
   }
 
-  this.getCurrentAnio=function(){
+  this.getCurrentAnio = function(){
     return this.anios[this.posicionMarcador.anio];
   }
 }
