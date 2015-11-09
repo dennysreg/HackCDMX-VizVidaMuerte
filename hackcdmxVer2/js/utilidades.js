@@ -24,6 +24,12 @@ var hospitales_arreglo_2011 =hospitales_arreglo.map(
 
 var definidorDePosiciones = new DefinidorDePosiciones();
 
+var months = ["Ene","Feb",
+        "Mar","Abr",
+        "May","Jun",
+        "Jul","Ago",
+        "Sep","Oct",
+        "Nov","Dic"];
 
 function getCategory(cat1, cat2, cat3, index, escala)
 {

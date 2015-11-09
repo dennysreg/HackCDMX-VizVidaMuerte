@@ -890,6 +890,8 @@ function controladorGrupoHospitales(){
 
         DOMsGrupos[grupo.key] = grupoDOM;
         DOMslineCharts[grupo.key] = lineChartDOM;
+
+        grupoHospitales.initLineChart(lineChartDOM);
       });
     }
     //muestra las line charts de esta categoria
@@ -990,6 +992,10 @@ function GrupoDeHospitales(){
 
   }
 
+  this.initLineChart = function(dom){
+ 
+  }
+
   this.createLineChart = function(dom,data){
     this.lineTimeChart.initLineChart(dom,"lineChart",400,100);
     this.lineTimeChart.createBorders(data);
@@ -1029,11 +1035,18 @@ function LineTimeChart(){
 
     this.xAxis = d3.svg.axis()
       .scale(this.x)
-      .orient("bottom");
+      .orient("bottom")
+      .innerTickSize(-height)
+      .outerTickSize(0)
+      .tickPadding(10);
 
     this.yAxis = d3.svg.axis()
       .scale(this.y)
-      .orient("left");
+      .orient("left")
+      .innerTickSize(-width)
+    .outerTickSize(0)
+    .tickPadding(10);
+
 
     this.dom = DOMParent;
     
@@ -1044,6 +1057,7 @@ function LineTimeChart(){
   }
 
   this.createBordersWithDomain = function(ymin,ymax){
+
     // define the x scale (horizontal)
     var mindate = new Date(this.year,0),
         maxdate = new Date(this.year,11);
@@ -1052,13 +1066,19 @@ function LineTimeChart(){
     this.y.domain([ymin,ymax]);
 
     this.dom.append("g")
-      .attr("class", "x axis")
+      .attr("class", "xAxis")
       .attr("transform", "translate(0," + this.height + ")")
       .call(this.xAxis);
 
-    this.dom.append("g")
-      .attr("class", "y axis")
-      .call(this.yAxis);
+
+
+    var axis = this.dom.selectAll(".yAxis").data([1]);
+
+    axis.enter().append("g")
+      .attr("class", "yAxis")
+
+
+    axis.transition().delay(800).call(this.yAxis);
   }
 
   this.createBorders = function(data){

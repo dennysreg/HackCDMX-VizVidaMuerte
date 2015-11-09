@@ -148,8 +148,8 @@ div#visualizacion {
 
 
 
-.axis path,
-.axis line {
+.yAxis path,
+.yAxis line, .xAxis line {
   fill: none;
   stroke: #000;
   shape-rendering: crispEdges;
@@ -174,3 +174,4 @@ div#visualizacion {
   stroke-width: 1px;
   stroke-opacity: 1;
 }
+
