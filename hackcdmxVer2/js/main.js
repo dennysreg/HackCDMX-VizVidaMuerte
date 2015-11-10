@@ -358,6 +358,9 @@ function ControladorHospitales(){
        hospitales.filter(function(d){return d.subtipo!=hospitaldata.subtipo}).forEach(function(d){
         DOMsHexCharts[d.id].attr("opacity",0.5);
        });
+       hospitales.filter(function(d){return d.subtipo==hospitaldata.subtipo}).forEach(function(d){
+        DOMsHexCharts[d.id].attr("opacity",0.8);
+       });
     }
     else
     {
@@ -365,7 +368,12 @@ function ControladorHospitales(){
       hospitales.filter(function(d){return d.delegacion!=hospitaldata.delegacion}).forEach(function(d){
         DOMsHexCharts[d.id].attr("opacity",0.5);
       });  
-    }  
+      hospitales.filter(function(d){return d.delegacion==hospitaldata.delegacion}).forEach(function(d){
+        DOMsHexCharts[d.id].attr("opacity",0.8);
+      });  
+
+    } 
+    DOMsHexCharts[this.id].attr("opacity",1);
   }
 
   function mouseOutOfHospital(d){
@@ -373,17 +381,16 @@ function ControladorHospitales(){
     if(currentCategoria=="Tipo")
     {
        $("#"+hospitaldata.subtipo.replace(/[^\w\*]/g,'')+".lineChart > [hospitalid='"+hospitaldata.id+"'] > path").attr("mouse","out");
-       hospitales.filter(function(d){return d.subtipo!=hospitaldata.subtipo}).forEach(function(d){
-        DOMsHexCharts[d.id].attr("opacity",1);
-       });
+      
     }
     else
     {
       $("#"+hospitaldata.delegacion.replace(/[^\w\*]/g,'')+".lineChart > [hospitalid='"+hospitaldata.id+"'] > path").attr("mouse","out");
-      hospitales.filter(function(d){return d.delegacion!=hospitaldata.delegacion}).forEach(function(d){
-        DOMsHexCharts[d.id].attr("opacity",1);
-      });  
+       
     }  
+     hospitales.forEach(function(d){
+        DOMsHexCharts[d.id].attr("opacity",1);
+       });
   }
 
   

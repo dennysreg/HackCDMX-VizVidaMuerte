@@ -179,7 +179,23 @@ function DefinidorDePosiciones(){
 
   }
 
-  this.generaGridDeHexagonos = function(){
+  this.generaPanal = function(size,posX,posY){
+    var width = size*2;
+    var height= sqrt(3)/2 * width;
+
+    var movements=
+    [[0,height],
+     [0.75*width,height/2],
+     [0.75*width,-height/2],
+     [0,-height],
+     [-0.75*width,-height/2],
+     [-0.75*width,height/2]
+    ]
+
+    var radialMovement=[0]
+    var curPosX = posX;
+    var curPosY = posY;
+
 
   }
 
