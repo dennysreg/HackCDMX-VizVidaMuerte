@@ -63,6 +63,10 @@ text.nombre_del_hospital{
 	stroke:#ADADAD;
 }
 
+.xAxis, .yAxis{
+	stroke:#ADADAD;
+}
+
 .lineChart{
 	font: 12px monospace;
 }

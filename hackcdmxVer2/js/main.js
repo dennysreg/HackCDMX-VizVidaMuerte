@@ -396,17 +396,19 @@ function ControladorHospitales(){
 
     if(currentCategoria=="Tipo")
     {
-       $("#"+hospitaldata.subtipo.replace(/[^\w\*]/g,'')+".lineChart > [hospitalid='"+hospitaldata.id+"'] > path").attr("mouse","in");
+      //$("#"+hospitaldata.subtipo.replace(/[^\w\*]/g,'')+".lineChart > [hospitalid='"+hospitaldata.id+"'] > path").
        hospitales.filter(function(d){return d.subtipo!=hospitaldata.subtipo}).forEach(function(d){
         DOMsHexCharts[d.id].attr("opacity",0.5);
        });
        hospitales.filter(function(d){return d.subtipo==hospitaldata.subtipo}).forEach(function(d){
         DOMsHexCharts[d.id].attr("opacity",0.9);
+        $(".linechart > path[hospitalid='"+d.id+"'] ").attr("mouse","inGroup");
        });
+       $(".linechart > path[hospitalid='"+hospitaldata.id+"'] ").attr("mouse","in");
     }
     else
     {
-      $("#"+hospitaldata.delegacion.replace(/[^\w\*]/g,'')+".lineChart > [hospitalid='"+hospitaldata.id+"'] > path").attr("mouse","in");
+      $(".linechart > [hospitalid='"+hospitaldata.id+"'] > path").attr("mouse","in");
       hospitales.filter(function(d){return d.delegacion!=hospitaldata.delegacion}).forEach(function(d){
         DOMsHexCharts[d.id].attr("opacity",0.5);
       });  
@@ -420,16 +422,7 @@ function ControladorHospitales(){
 
   function mouseOutOfHospital(d){
     var hospitaldata = mapHospitales[this.id][0];
-    if(currentCategoria=="Tipo")
-    {
-       $("#"+hospitaldata.subtipo.replace(/[^\w\*]/g,'')+".lineChart > [hospitalid='"+hospitaldata.id+"'] > path").attr("mouse","out");
-      
-    }
-    else
-    {
-      $("#"+hospitaldata.delegacion.replace(/[^\w\*]/g,'')+".lineChart > [hospitalid='"+hospitaldata.id+"'] > path").attr("mouse","out");
-       
-    }  
+    $(".linechart > path ").attr("mouse","out");
      hospitales.forEach(function(d){
         DOMsHexCharts[d.id].attr("opacity",1);
        });
@@ -1240,12 +1233,12 @@ function LineTimeChart(){
       });
 
 
-    hospital.enter().append("g")
-      .attr("hospitalid", function(h){
-        return h.key;})
+    hospital.enter()
       .append("path")
       .attr("class", "line")
       .attr("id","lineaNacimientos")
+      .attr("hospitalid", function(h){
+        return h.key;})
       .attr("d",function(d){
         return line(d.value);
       });

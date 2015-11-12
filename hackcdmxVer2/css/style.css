@@ -171,7 +171,14 @@ div#visualizacion {
 .line[mouse=in]{
   fill: none;
   stroke: steelblue;
-  stroke-width: 1px;
+  stroke-width: 4px;
   stroke-opacity: 1;
 }
 
+
+.line[mouse=inGroup]{
+  fill: none;
+  stroke: black;
+  stroke-width: 1px;
+  stroke-opacity: 1;
+}
