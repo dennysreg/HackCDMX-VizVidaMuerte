@@ -95,7 +95,21 @@ function createObjectToArray(myObject){
 
 //esta función genera arreglos de ayuda para acomodar elementos.
 function DefinidorDePosiciones(){
+  var panalPositions = {};
+  var posicionesPorTipo= {
+    "T-II": [17], 
+    "General": [0,6,1,8,4,13,3,2,9,22,12,11,10,23], 
+    "Perinatologia": [13], 
+    "Especialidades": [18], 
+    "Materno Infantil": [32,25,26,6],
+    "Pediatrico": [33,31],
+    "Atencion a la mujer" :[14],
+    "Cirugia":[7]
+    }
   //variables de utilidad para posicionamiento
+  this.init = function(){
+
+  }
 
   //genera las posiciones para todos para todos los elementos de un arreglo 
   this.generaGrid = function(offSetX,offSetY,gridW,gridH,w,h,ids)
@@ -178,24 +192,73 @@ function DefinidorDePosiciones(){
     return positions;
 
   }
+  this.generaPanalPorTipo = function(ids)
+  {
+    var returnObj = {}
+    var counter=0;
+    var hospitales;
+    for(var key in ids)
+    {
+      hospitales = ids[key];
 
-  this.generaPanal = function(size,posX,posY){
+      for(var i=0;i<hospitales.length;i++){
+        returnObj[hospitales[i].id] = panalPositions[posicionesPorTipo[key][i]];
+
+      }
+    }
+    return returnObj;
+  }
+
+  this.generaPanal = function(size,posX,posY,ids){
+    
+    var gridPosition = {};
+    var returnObj={};
+    var counter = 0;
+
     var width = size*2;
-    var height= sqrt(3)/2 * width;
+    var height= Math.sqrt(3)/2 * width;
 
     var movements=
-    [[0,height],
-     [0.75*width,height/2],
+    [[0,-height],
      [0.75*width,-height/2],
-     [0,-height],
-     [-0.75*width,-height/2],
-     [-0.75*width,height/2]
+     [0.75*width,height/2],
+     [0,height],
+     [-0.75*width,height/2],
+     [-0.75*width,-height/2]
     ]
+
+    var radialHexMovement = 
+    [1,3,4,5,0,1,1,2,3,3,4,4,5,5,0,0,1,1,1,2,2,3,3,3,4,4,4,5,5,5,0,0,0,1,1,1,1,2,2,2,3,3,3,3,4,4,4,4,5,5,5,5,0,0];
 
     var radialMovement=[0]
     var curPosX = posX;
     var curPosY = posY;
+    
 
+    while(counter < radialHexMovement.length)
+    {
+        gridPosition = {};
+        gridPosition.x = curPosX;
+        gridPosition.y = curPosY;
+
+
+        curPosX+=movements[radialHexMovement[counter]][0];
+        curPosY+=movements[radialHexMovement[counter]][1];
+
+        panalPositions[counter] = gridPosition;
+        counter++;
+    }
+
+    var poss = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,22,23,30,31,32,33]
+    counter=0;
+
+    while(counter < ids.length)
+    {
+        returnObj[ids[counter]] = panalPositions[poss[counter]];
+        counter++;
+    }
+
+    return returnObj;
 
   }
 

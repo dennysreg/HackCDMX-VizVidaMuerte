@@ -1,6 +1,6 @@
 //
 var generalWidth=1000;
-var generalHeight=1000;
+var generalHeight=2000;
 //esta es la clase controladora de la visualizacion en general
 //controla las transiciones entre los estados de la visualizacion
 //controla que elementos son visibles
@@ -200,6 +200,7 @@ function ControladorDeEscenas(){
     //pon las lineas Contadoras de un lado 
     controladorHospitales.controladorDeLineasContadoras.movePosicionLineasContadoras(75,90);
     controladorHospitales.controladorDeLineasContadoras.setLargoLinea(50);
+    controladorHospitales.controladorDeLineasContadoras.hideLineasContadoras();
 
     //inserta los hospitales al wrapper-all-hospitals
     //el contador es para darle tiempo a que los otros 
@@ -211,7 +212,7 @@ function ControladorDeEscenas(){
     
 
     //pon los hospitales en grid
-    controladorHospitales.setPosicionDeDOMSHospitales(definidorDePosiciones.generaGrid(0,0,generalWidth, generalHeight,80,150, hospitalesids));
+    controladorHospitales.setPosicionDeDOMSHospitales(definidorDePosiciones.generaPanal(40,300,300,hospitalesids));
 
   }
 
@@ -228,17 +229,19 @@ function ControladorDeEscenas(){
     
     var keys = Object.keys(hospitalesPorTipo);
 
-    controladorGrupoHospitales.setPosicionDeDOMSGrupos(
+   /* controladorGrupoHospitales.setPosicionDeDOMSGrupos(
         createObjectToArray(hospitalesPorTipo),
         definidorDePosiciones.generaRenglones(0,0,200,keys));
-
+    */
     //por cada grupo hacer un acomodo grid
     for(key in hospitalesPorTipo){
       var hospitalesids = (hospitalesPorTipo[key]).map(function(h){return h.id});
       controladorHospitales.setPosicionDeDOMSHospitales(definidorDePosiciones.generaGrid(0,0,generalWidth, generalHeight,80,150, hospitalesids));  
     }
+    controladorHospitales.setPosicionDeDOMSHospitales(definidorDePosiciones.generaPanalPorTipo(mapHospitalesPorTipo));
     controladorHospitales.addChangeOpacityListeners(categoria);
   }
+
 
   //en la escena tres se muestran los datos acumulando por mes.
   this.setEscena3 = function(){
@@ -333,6 +336,7 @@ function ControladorHospitales(){
         domHospital = DOMsHospitales[id];
         domHospital.transition().duration(800).attr("transform", function(d) { 
          return "translate(" + posiciones[id].x + "," + posiciones[id].y + ")"; });
+  
     }
   }
 
@@ -579,15 +583,16 @@ function ControladorDeHexCharts(){
   var largoLinea=100;
   var lineScale;
   var delay = 500;
-
+  
   var that = this;
-
+ 
   //posicion
   var px,py;
+  var visible = true;
 
   var classes = [ "no-vivos","hombres","nacimientos","mujeres"];
   this.updateLineasContadoras = function(_svg,anio,mes){
-
+    if(!visible) return;
     var domHospital;
     svg = _svg;
 
@@ -682,6 +687,12 @@ function ControladorDeHexCharts(){
 
     this.setLargoLinea = function(largo){
       largoLinea = largo;
+    }
+
+    this.hideLineasContadoras = function(){
+      for(var key in DOMsLineasContadoras){
+        DOMsLineasContadoras[key].attr("display","none");
+      }
     }
 
   }

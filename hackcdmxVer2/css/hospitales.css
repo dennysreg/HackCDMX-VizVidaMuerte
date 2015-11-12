@@ -60,6 +60,7 @@ text.nombre_del_hospital{
 
  path.backHexagons{
 	fill:white;
+	stroke:#ADADAD;
 }
 
 .lineChart{
