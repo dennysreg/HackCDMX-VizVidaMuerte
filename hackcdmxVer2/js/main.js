@@ -33,6 +33,7 @@ function controlVisualizacion(){
   //controlador de los elementos visuales de los hospitales
   this.controladorHospitales;
   this.controladorGrupoHospitales;
+  this.controladorLineChart;
   //controladores de eventos
   this.controlDelTiempo;
   this.controladorDeEscenas; 
@@ -42,6 +43,7 @@ function controlVisualizacion(){
   this.iniciaControlVisualizacion = function(){
     this.controladorHospitales = new ControladorHospitales();
     this.controladorGrupoHospitales = new controladorGrupoHospitales();
+    this.controladorLineChart = new ControladorLineChart();
 
     this.controlDelTiempo = new ControlDelTiempo();
     this.controlDelTiempo.iniciaControlDelTiempo();
@@ -50,7 +52,7 @@ function controlVisualizacion(){
     this.centroDeControl.initCentroDeControl();
 
     this.controladorDeEscenas = new ControladorDeEscenas();
-    this.controladorDeEscenas.iniciaControl(this.controladorHospitales,this.controladorGrupoHospitales);
+    this.controladorDeEscenas.iniciaControl(this.controladorHospitales,this.controladorGrupoHospitales,this.controladorLineChart);
   }  
 
   //inicia los dom elementos secundarios
@@ -58,6 +60,8 @@ function controlVisualizacion(){
     
     this.controladorHospitales.initDOMsHospitales(this.svg);
     this.controladorGrupoHospitales.initDOM(this.svg);
+    
+    this.controladorLineChart.initDOM(this.svg);
   } 
 
   //crea los dos elementos principales de dibujo
@@ -93,7 +97,7 @@ function controlVisualizacion(){
 
     this.controladorHospitales.updateHexCharts(this.svg,2011,0);
     this.controladorHospitales.updateLineasContadoras(this.svg,2011,0);
-    this.controladorHospitales.controladorDeNombreDeHospitales.createNombresDeHospitales(this.svg);
+    //this.controladorHospitales.controladorDeNombreDeHospitales.createNombresDeHospitales(this.svg);
     //manejador automatico del tiempo
     //this.controlDelTiempo.automaticIntervalTimer();
   }
@@ -181,9 +185,10 @@ function ControladorDeEscenas(){
   //contiene el controlador de elementos visuales
   var controladorHospitales;
 
-  this.iniciaControl = function(_controladorHospitales,_controaldorGrupoHospitales){
+  this.iniciaControl = function(_controladorHospitales,_controaldorGrupoHospitales,_controladorLineChart){
     controladorHospitales = _controladorHospitales;
     controladorGrupoHospitales = _controaldorGrupoHospitales;
+    controladorLineChart = _controladorLineChart;
   }
 
 
@@ -213,7 +218,7 @@ function ControladorDeEscenas(){
 
     //pon los hospitales en grid
     controladorHospitales.setPosicionDeDOMSHospitales(definidorDePosiciones.generaPanal(40,300,300,hospitalesids));
-
+    controladorHospitales.addTooltipListeners();
   }
 
   //en la escena dos se ordenan los hospitales por delegacion o por tipo de hospital
@@ -223,21 +228,12 @@ function ControladorDeEscenas(){
     
     //controladorHospitales.setPosicionDeDOMSHospitales(definidorDePosiciones.generaClustersDePosicionesPorTipo(0,0,800,400,80,150,arregloPorTipo,50));
     var arreglo_hospitalesPorTipo = createObjectToArray(hospitalesPorTipo);
-    controladorGrupoHospitales.createGrupoDoms(categoria,arreglo_hospitalesPorTipo,anio);
-    controladorGrupoHospitales.insertHospitalesToGroupWrapper(arreglo_hospitalesPorTipo);
-    controladorGrupoHospitales.showLineCharts(categoria);
+    //controladorGrupoHospitales.createGrupoDoms(categoria,arreglo_hospitalesPorTipo,anio);
+    //controladorGrupoHospitales.insertHospitalesToGroupWrapper(arreglo_hospitalesPorTipo);
+    //controladorGrupoHospitales.showLineCharts(categoria);
     
-    var keys = Object.keys(hospitalesPorTipo);
-
-   /* controladorGrupoHospitales.setPosicionDeDOMSGrupos(
-        createObjectToArray(hospitalesPorTipo),
-        definidorDePosiciones.generaRenglones(0,0,200,keys));
-    */
-    //por cada grupo hacer un acomodo grid
-    for(key in hospitalesPorTipo){
-      var hospitalesids = (hospitalesPorTipo[key]).map(function(h){return h.id});
-      controladorHospitales.setPosicionDeDOMSHospitales(definidorDePosiciones.generaGrid(0,0,generalWidth, generalHeight,80,150, hospitalesids));  
-    }
+    
+   
     controladorHospitales.setPosicionDeDOMSHospitales(definidorDePosiciones.generaPanalPorTipo(mapHospitalesPorTipo));
     controladorHospitales.addChangeOpacityListeners(categoria);
   }
@@ -340,7 +336,49 @@ function ControladorHospitales(){
     }
   }
 
+  this.removeChangeOpacityListeners = function(){
+    for(var id in DOMsHospitales){
+      
+      DOMsHospitales[id]
+      .on("mouseenter",function(d){})
+      .on("mouseover",function(d){})
+      .on("mouseout",function(d){});
+    }
+  }
 
+  this.addTooltipListeners = function(){
+    var div = d3.select("body").append("div")   
+        .attr("class", "tooltip")               
+        .style("opacity", 0);
+
+    for(var id in DOMsHospitales){
+      
+      DOMsHospitales[id]
+      .on("mouseenter", function(d) {   
+
+            var hospitaldata = mapHospitales[this.id][0]; 
+
+            var rect = this.getBoundingClientRect();
+              div.transition()        
+                  .duration(200)      
+                  .style("opacity", .9);      
+              div .html(  hospitaldata.Nombre + "<br/>aaa"  )  
+                  .style("left", rect.left + "px")     
+                  .style("top", rect.top + "px");    
+              })
+     .on("mouseleave", function(d) {       
+                div.transition()        
+                .duration(500)      
+                .style("opacity", 0)});   
+        
+    }
+  }
+
+  function showTooltip(d){
+    var hospitaldata = mapHospitales[this.id][0];
+    debugger;
+    this.append("text").text(hospitaldata.Nombre);
+  }
 
   this.addChangeOpacityListeners = function(categoria){
     currentCategoria = categoria;
@@ -363,7 +401,7 @@ function ControladorHospitales(){
         DOMsHexCharts[d.id].attr("opacity",0.5);
        });
        hospitales.filter(function(d){return d.subtipo==hospitaldata.subtipo}).forEach(function(d){
-        DOMsHexCharts[d.id].attr("opacity",0.8);
+        DOMsHexCharts[d.id].attr("opacity",0.9);
        });
     }
     else
@@ -373,7 +411,7 @@ function ControladorHospitales(){
         DOMsHexCharts[d.id].attr("opacity",0.5);
       });  
       hospitales.filter(function(d){return d.delegacion==hospitaldata.delegacion}).forEach(function(d){
-        DOMsHexCharts[d.id].attr("opacity",0.8);
+        DOMsHexCharts[d.id].attr("opacity",0.9);
       });  
 
     } 
@@ -701,6 +739,7 @@ function ControladorNombresDeHospitales(){
   var DOMsNombresHospitales;
   var svg;
 
+  this.visible = true;
   this.createNombresDeHospitales=function(_svg){
    svg = _svg;
     //por cada hospital
@@ -732,6 +771,12 @@ function ControladorNombresDeHospitales(){
     DOMsNombresHospitales = _doms; 
   }
 
+  this.hideDOMs = function(){
+    this.visible = false;
+    for(key in DOMsNombresHospitales){
+      DOMsNombresHospitales[key].attr("display","none");
+    }
+  }
 }
 
 //Esta funcion es el centro de control para el usuario
@@ -895,6 +940,33 @@ function ControladorLineCharts(){
 
 }
 
+
+function ControladorLineChart(){
+  var DOM;
+  var initialized = false;
+  this.lineChart ;
+
+  this.initDOM = function(parentDOM){
+      DOM = parentDOM.append("g").attr("class","linechart");
+      this.lineChart = new LineTimeChart();
+      this.createLineChart(
+        createObjectToArray(
+          getHospitalsDataOfIds(
+            hospitalesids,2011)));
+  }
+
+  this.createLineChart = function(data){
+    
+    this.lineChart.initLineChart(DOM,"lineChart",400,100);
+    this.lineChart.createBorders(data);
+    this.updateLineChart(data);
+  }
+
+  this.updateLineChart = function(data){
+    this.lineChart.insertLines(DOM,data);
+  }
+}
+
 function controladorGrupoHospitales(){
 
   var DOMsGrupos={};
@@ -980,7 +1052,7 @@ this.resetPosicionDeDOMSGrupos = function(){
     this.groupData.forEach(function(grupo){
         id = grupo.key;
         domgrupo  = DOMsGrupos[id];
-        
+        debugger;
         var dataHosps = createObjectToArray(
           getHospitalsDataOfIds(
             grupo.value.map(
@@ -1004,7 +1076,6 @@ this.resetPosicionDeDOMSGrupos = function(){
   }
 
   this.showLineCharts = function(portipo){
-
     var linecharts = d3.selectAll('[tipo='+portipo+']');
     linecharts.attr("opacity",1);  
   }
@@ -1048,6 +1119,7 @@ function GrupoDeHospitales(){
     this.lineTimeChart.initLineChart(dom,"lineChart",400,100);
     this.lineTimeChart.createBorders(data);
   }
+
   this.updateLineChart = function(dom,data){
     this.lineTimeChart.insertLines(dom,data);
   }
