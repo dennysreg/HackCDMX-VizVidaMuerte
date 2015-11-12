@@ -97,12 +97,12 @@ function createObjectToArray(myObject){
 function DefinidorDePosiciones(){
   var panalPositions = {};
   var posicionesPorTipo= {
-    "T-II": [17], 
-    "General": [0,6,1,8,4,13,3,2,9,22,12,11,10,23], 
+    "T-II": [31], 
+    "General": [0,1,4,8,3,2,9,22,23,10,11,12,4,1], 
     "Perinatologia": [13], 
     "Especialidades": [18], 
-    "Materno Infantil": [32,25,26,6],
-    "Pediatrico": [33,31],
+    "Materno Infantil": [32,15,5,16],
+    "Pediatrico": [17,6],
     "Atencion a la mujer" :[14],
     "Cirugia":[7]
     }
@@ -228,7 +228,8 @@ function DefinidorDePosiciones(){
     ]
 
     var radialHexMovement = 
-    [1,3,4,5,0,1,1,2,3,3,4,4,5,5,0,0,1,1,1,2,2,3,3,3,4,4,4,5,5,5,0,0,0,1,1,1,1,2,2,2,3,3,3,3,4,4,4,4,5,5,5,5,0,0];
+    [1,3,4,5,0,1,1,2,3,3,4,4,5,5,0,0,1,1,1,2,2,3,3,3,4,4,4,5,5,5,0,0,0,1,1,1,1,2,2,2,3,3,3,3,4,4,4,4,5,5,5,5,
+    0,0,0,0,1,1,1,1,1,2,2,2,2,3,3,3,3,3,4,4,4,4,4,4,5,5,5,5,5];
 
     var radialMovement=[0]
     var curPosX = posX;
