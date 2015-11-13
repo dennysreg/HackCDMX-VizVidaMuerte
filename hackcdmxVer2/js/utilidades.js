@@ -105,6 +105,16 @@ function DefinidorDePosiciones(){
     "Atencion a la mujer" :[14],
     "Cirugia":[7]
     }
+  var posicionesTitulosTipos={
+    "T-II": {"posX":0,"posY":0}, 
+    "General": {"posX":0,"posY":0}, 
+    "Perinatologia": {"posX":0,"posY":0}, 
+    "Especialidades": {"posX":0,"posY":0}, 
+    "Materno Infantil": {"posX":0,"posY":0},
+    "Pediatrico": {"posX":0,"posY":0},
+    "Atencion a la mujer" :{"posX":0,"posY":0},
+    "Cirugia":{"posX":0,"posY":0}
+    } 
   //variables de utilidad para posicionamiento
   this.init = function(){
 
