@@ -21,7 +21,6 @@ var hospitales_arreglo_2011 =hospitales_arreglo.map(
     });
 
 //utilidades
-
 var definidorDePosiciones = new DefinidorDePosiciones();
 
 var months = ["Ene","Feb",

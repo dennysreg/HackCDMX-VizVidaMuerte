@@ -138,7 +138,7 @@ span.acre-feet{
 }
 
 div#visualizacion {
-  height: 400px;
+  height: 800px;
   width: 800px;
   /*border:2px solid #000;*/
   overflow-y: scroll;
@@ -163,7 +163,7 @@ div#visualizacion {
   fill: none;
   stroke: steelblue;
   stroke-width: 1px;
-  stroke-opacity: 0.3;
+  stroke-opacity: 0.5;
 }
 
 

@@ -63,6 +63,18 @@ text.nombre_del_hospital{
 	stroke:#ADADAD;
 }
 
+.hexChart[selected=true] {
+	opacity:1;
+}
+
+.hexChart[selected=true] > path{
+	stroke:black;
+}
+
+.hexChart[selected=false]{
+	opacity:0.5;
+}
+
 .xAxis, .yAxis{
 	stroke:#ADADAD;
 }
@@ -86,4 +98,30 @@ div.tooltip {
   border: 0px;      
   border-radius: 8px;           
   pointer-events: none;         
+}
+
+.wrapper-group#TII  path.backHexagons{
+	fill:#A0DD68;
+}
+.wrapper-group#General  path.backHexagons{
+	fill:#6768B2;
+}
+.wrapper-group#Perinatologia  path.backHexagons{
+	fill:#E2CE7F;
+}
+.wrapper-group#Especialidades  path.backHexagons{
+	fill:#B4B4C9;
+}
+.wrapper-group#MaternoInfantil  path.backHexagons{
+	fill:#BADDBD;
+}
+.wrapper-group#Cirugia  path.backHexagons{
+	fill:#C95EA8;
+}
+
+.wrapper-group#Atencionalamujer  path.backHexagons{
+	fill:#A0A0B2;
+}
+.wrapper-group#Pediatrico  path.backHexagons{
+	fill:#E2E1D0;
 }
