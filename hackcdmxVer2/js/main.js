@@ -124,12 +124,10 @@ function controlVisualizacion(){
   //en esta parte controla los cambios ocurridos cuando cambia la fecha.
   this.escuchoCambioDeFecha = function(anio, mes)
   {
-  
+    debugger;
    this.controladorHospitales.updateHexCharts(this.svg,anio,mes);
-   this.controladorHospitales.updateLineasContadoras(this.svg,anio,mes); 
-   this.controladorLineChart.updateLineChart( createObjectToArray(
-          getHospitalsDataOfIds(
-            hospitalesids,anio)));
+   //this.controladorHospitales.updateLineasContadoras(this.svg,anio,mes); 
+   //this.controladorLineChart.updateLineChart( createObjectToArray( getHospitalsDataOfIds(hospitalesids,anio)));
 
    this.controladorC3LineChart.reloadDataOnYearChange(anio);
   }  
@@ -1141,7 +1139,7 @@ function ControladorC3LineChart(){
   }
 
   this.loadData = function(_loadData,unloadData,categoria){
-    debugger;
+
     var arregloColores = categoria=="Tipo" ? mapHospitalesColorsByTipoNacimientos : mapHospitalesColorsByZonaNacimientos;
  
     var loadData =  [['x', '01', '02', '03', '04', '05', '06', '07','08', '09', '10', '11', '12']];
@@ -1273,6 +1271,9 @@ function controladorGrupoHospitales(){
       });   
   }
 
+this.setPosicionesGruposTitulos = function(posiciones){
+  
+}
 
 this.setPosicionToAllDOMSGrupos = function(px,py){
     for(var key in DOMsGrupos){
@@ -1350,6 +1351,10 @@ function GrupoDeHospitales(){
   this.createTitle = function(dom,title){
     this.title = title;
     dom.append("text").attr("class","grouptitle").text(title);
+  }
+
+  this.setPositionOfTitles = function(px,py){
+    dom.select(".grouptitle").attr("transform","translate("+px+","+py+")")
   }
 
   this.setPosicionesHexCharts = function(){
