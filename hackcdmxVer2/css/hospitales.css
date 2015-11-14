@@ -95,7 +95,8 @@ div.tooltip {
   background: rgba(200, 54, 54, 0.5);
   border: 0px;      
   border-radius: 8px;           
-  pointer-events: none;         
+  pointer-events: none;    
+  z-index: 9;     
 }
 
 .wrapper-group#TII  path.backHexagons{
@@ -122,4 +123,17 @@ div.tooltip {
 }
 .wrapper-group#Pediatrico  path.backHexagons{
 	fill:#E2E1D0;
+}
+
+.wrapper-group#Sur  path.backHexagons{
+	fill:#A0DD68;
+}
+.wrapper-group#Poniente  path.backHexagons{
+	fill:#E2CE7F;
+}
+.wrapper-group#Oriente  path.backHexagons{
+	fill:#6768B2;
+}
+.wrapper-group#Centro  path.backHexagons{
+	fill:#B4B4C9;
 }

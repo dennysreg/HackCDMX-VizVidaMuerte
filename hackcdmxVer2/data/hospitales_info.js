@@ -39,7 +39,8 @@ var hospitales=[
     "del_x":100*0.8,
     "del_y":-100*0.4,
     "tipo":"Hospital",
-    "subtipo":"T-II"
+    "subtipo":"T-II",
+    "zona":"Oriente"
   },
   {
     "id":"DFSSA018166",
@@ -51,7 +52,8 @@ var hospitales=[
     "del_x":-100 * 0.8,
     "del_y":-100 * 0.4,
     "tipo":"Hospital",
-    "subtipo":"General"
+    "subtipo":"General",
+    "zona":"Sur"
   },
   {
     "id":"DFSSA004096",
@@ -63,7 +65,8 @@ var hospitales=[
     "del_x":0,
     "del_y":0,
     "tipo":"Hospital",
-    "subtipo":"Perinatologia"
+    "subtipo":"Perinatologia",
+    "zona":"Poniente"
   },
   {
     "id":"DFSSA003973",
@@ -75,7 +78,8 @@ var hospitales=[
     "del_x":-100 * 0.8,
     "del_y":-100 * 0.4,
     "tipo":"Hospital",
-    "subtipo":"General"
+    "subtipo":"General",
+    "zona":"Centro"
   },
   {
     "id":"DFSSA004265",
@@ -87,7 +91,8 @@ var hospitales=[
     "del_x":-100 * 0.8,
     "del_y":-100 * 0.4,
     "tipo":"Hospital",
-    "subtipo":"Especialidades"
+    "subtipo":"Especialidades",
+    "zona":"Oriente"
   },
   {
     "id":"DFSSA017886",
@@ -99,7 +104,8 @@ var hospitales=[
     "del_x":0,
     "del_y":0,
     "tipo":"Hospital",
-    "subtipo":"General"
+    "subtipo":"General",
+    "zona":"Poniente"
   },
   {
     "id":"DFSSA002066",
@@ -111,7 +117,8 @@ var hospitales=[
     "del_x":0,
     "del_y":0,
     "tipo":"Hospital",
-    "subtipo":"General"
+    "subtipo":"General",
+    "zona":"Sur"
   },
   {
     "id":"DFSSA003705",
@@ -123,7 +130,8 @@ var hospitales=[
     "del_x":0,
     "del_y":0,
     "tipo":"Hospital",
-    "subtipo": "Materno Infantil"
+    "subtipo": "Materno Infantil",
+    "zona":"Oriente"
   },
   
  
@@ -138,7 +146,8 @@ var hospitales=[
     "del_x":0,
     "del_y":0,
     "tipo":"Hospital",
-    "subtipo":"Materno Infantil"
+    "subtipo":"Materno Infantil",
+    "zona":"Poniente"
   },
   
   {
@@ -151,7 +160,8 @@ var hospitales=[
     "del_x":0,
     "del_y":0,
     "tipo":"Hospital",
-    "subtipo":"General"
+    "subtipo":"General",
+    "zona":"Centro"
   },
   {
     "id":"DFSSA001540",
@@ -163,7 +173,8 @@ var hospitales=[
     "del_x":0,
     "del_y":-100 * 0.9,
     "tipo":"Hospital",
-    "subtipo":"General"
+    "subtipo":"General",
+    "zona":"Oriente"
   },
   
   {
@@ -176,7 +187,8 @@ var hospitales=[
     "del_x":-100 * 0.8,
     "del_y":100 * 0.4,
     "tipo":"Hospital",
-    "subtipo":"General"
+    "subtipo":"General",
+    "zona":"Poniente"
   },
   {
     "id":"DFSSA003162",
@@ -188,7 +200,8 @@ var hospitales=[
     "del_x":0,
     "del_y":0,
     "tipo":"Hospital",
-    "subtipo":"General"
+    "subtipo":"General",
+    "zona":"Sur"
   },
   {
     "id":"DFSSA003384",
@@ -200,7 +213,8 @@ var hospitales=[
     "del_x":0,
     "del_y":0,
     "tipo":"Hospital",
-    "subtipo":"General"
+    "subtipo":"General",
+    "zona":"Centro"
   },
   {
     "id":"DFSSA018154",
@@ -212,7 +226,8 @@ var hospitales=[
     "del_x":100 * 0.8,
     "del_y":-100 * 0.4,
     "tipo":"Hospital",
-    "subtipo":"General"
+    "subtipo":"General",
+    "zona":"Sur"
   },
   {
     "id":"DFSSA000881",
@@ -224,7 +239,8 @@ var hospitales=[
     "del_x":-100 * 0.8,
     "del_y":-100 * 0.4,
     "tipo":"Hospital",
-    "subtipo":"General"
+    "subtipo":"General",
+    "zona":"Centro"
   },
   {
     "id":"DFSSA002491",
@@ -236,7 +252,8 @@ var hospitales=[
     "del_x":0,
     "del_y":0,
     "tipo":"Hospital",
-    "subtipo":"Materno Infantil"
+    "subtipo":"Materno Infantil",
+    "zona":"Sur"
   },
   {
     "id":"DFSSA018142",
@@ -248,7 +265,8 @@ var hospitales=[
     "del_x":0,
     "del_y":0,
     "tipo":"Hospital",
-    "subtipo":"Materno Infantil"
+    "subtipo":"Materno Infantil",
+    "zona":"Oriente"
   },
   {
     "id":"DFSSA003944",
@@ -260,7 +278,8 @@ var hospitales=[
     "del_x":100*0.8,
     "del_y":-100*0.4,
     "tipo":"Hospital",
-    "subtipo":"Cirugia"
+    "subtipo":"Cirugia",
+    "zona":"Centro"
   },
   {
     "id":"DFSSA003961",
@@ -272,7 +291,8 @@ var hospitales=[
     "del_x":-100*0.8,
     "del_y":100*0.4,
     "tipo":"Hospital",
-    "subtipo":"General"
+    "subtipo":"General",
+    "zona":"Sur"
   },
   {
     "id":"DFSSA004002",
@@ -284,7 +304,8 @@ var hospitales=[
     "del_x":-100 * 0.8,
     "del_y":-100 * 0.4,
     "tipo":"Hospital",
-    "subtipo":"Atencion a la mujer"
+    "subtipo":"Atencion a la mujer",
+    "zona":"Poniente"
   },
   {
     "id":"DFSSA002672",
@@ -296,7 +317,8 @@ var hospitales=[
     "del_x":0,
     "del_y":0,
     "tipo":"Hospital",
-    "subtipo":"General"
+    "subtipo":"General",
+    "zona":"Sur"
   },
   {
     "id":"DFSSA003372",
@@ -308,7 +330,8 @@ var hospitales=[
     "del_x":-100 * 0.8,
     "del_y":100 * 0.4,
     "tipo":"Hospital",
-    "subtipo":"Pediatrico"
+    "subtipo":"Pediatrico",
+    "zona":"Centro"
   },
   {
     "id":"DFSSA002993",
@@ -320,6 +343,7 @@ var hospitales=[
     "del_x":0,
     "del_y":0,
     "tipo":"Hospital",
-    "subtipo":"Pediatrico"
+    "subtipo":"Pediatrico",
+    "zona":"Sur"
   }
 ];

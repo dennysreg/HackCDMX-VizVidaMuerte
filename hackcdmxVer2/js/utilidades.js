@@ -4,6 +4,7 @@
 var mapHospitales = d3.nest().key(function(d){ return d.id }).sortKeys(d3.ascending).rollup(function(d){return d; }).map(hospitales);
 var mapHospitalesPorTipo = d3.nest().key(function(d){ return d.subtipo; }).sortKeys(d3.ascending).rollup(function(d){return d; }).map(hospitales);
 var mapHospitalesPorDelegacion = d3.nest().key(function(d){ return d.delegacion; }).sortKeys(d3.ascending).rollup(function(d){return d; }).map(hospitales);
+var mapHospitalesPorZona = d3.nest().key(function(d){ return d.zona; }).sortKeys(d3.ascending).rollup(function(d){return d; }).map(hospitales);
 
 var hospitalesids = Object.keys(mapHospitales);
 
@@ -19,6 +20,24 @@ var hospitales_arreglo_2011 =hospitales_arreglo.map(
     
       return rObj;
     });
+
+var colorByCategory={
+  "TII":'#A0DD68',
+  "General":'#6768B2',
+  "Perinatologia":'#E2CE7F',
+  "Especialidades":'#B4B4C9',
+  "MaternoInfantil":'#BADDBD',
+  "Cirugia":'#C95EA8',
+  "Atencionalamujer":'#A0A0B2',
+  "Pediatrico":'#E2E1D0',
+  "Sur":"#A0DD68",
+  "Centro":"#6768B2",
+  "Poniente":"#E2CE7F",
+  "Oriente":"#B4B4C9"
+}
+
+var mapHospitalesColorsByTipoNacimientos = d3.nest().key(function(d){ return d.id+"_nacimientos" }).sortKeys(d3.ascending).rollup(function(d){ return colorByCategory[d[0].subtipo.replace(/[^\w\*]/g,'')]; }).map(hospitales);
+var mapHospitalesColorsByZonaNacimientos = d3.nest().key(function(d){ return d.id+"_nacimientos" }).sortKeys(d3.ascending).rollup(function(d){ return colorByCategory[d[0].zona.replace(/[^\w\*]/g,'')]; }).map(hospitales);
 
 //utilidades
 var definidorDePosiciones = new DefinidorDePosiciones();
@@ -96,15 +115,22 @@ function createObjectToArray(myObject){
 function DefinidorDePosiciones(){
   var panalPositions = {};
   var posicionesPorTipo= {
-    "T-II": [31], 
-    "General": [0,1,4,8,3,2,9,22,23,10,11,12,4,1], 
-    "Perinatologia": [13], 
+    "T-II": [54], 
+    "General": [0,1,4,8,3,2,9,22,23,10,11,12,13], 
+    "Perinatologia": [14], 
     "Especialidades": [18], 
     "Materno Infantil": [32,15,5,16],
     "Pediatrico": [17,6],
-    "Atencion a la mujer" :[14],
+    "Atencion a la mujer" :[31],
     "Cirugia":[7]
     }
+  var posicionesPorZona = {
+    "Sur":[12,13,3,14,10,11,2,4],
+    "Centro":[18,17,7,6,5,0],
+    "Poniente":[54,31,15,32,16],
+    "Oriente":[22,23,9,1,8]
+  }
+
   var posicionesTitulosTipos={
     "T-II": {"posX":0,"posY":0}, 
     "General": {"posX":0,"posY":0}, 
@@ -201,8 +227,9 @@ function DefinidorDePosiciones(){
     return positions;
 
   }
-  this.generaPanalPorTipo = function(ids)
+  this.generaPanalPorTipo = function(categoria, ids)
   {
+    var posicionesPorCategoria = categoria=="Tipo" ? posicionesPorTipo : posicionesPorZona;
     var returnObj = {}
     var counter=0;
     var hospitales;
@@ -211,8 +238,7 @@ function DefinidorDePosiciones(){
       hospitales = ids[key];
 
       for(var i=0;i<hospitales.length;i++){
-        returnObj[hospitales[i].id] = panalPositions[posicionesPorTipo[key][i]];
-
+        returnObj[hospitales[i].id] = panalPositions[posicionesPorCategoria[key][i]];
       }
     }
     return returnObj;
@@ -259,7 +285,7 @@ function DefinidorDePosiciones(){
         counter++;
     }
 
-    var poss = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,22,23,30,31,32,33]
+    var poss = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,22,23,30,31,32,54]
     counter=0;
 
     while(counter < ids.length)
@@ -341,7 +367,6 @@ function getHospitalsDataOfIds(ids){
 function getHospitalsDataOfIds(ids,year){
   var returnObj={};
   ids.forEach(function(id){
-    
     returnObj[id] = createObjectToArray(hospitales_datos[id][year]);
   })
 
