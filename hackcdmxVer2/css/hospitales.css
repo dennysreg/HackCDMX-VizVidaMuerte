@@ -74,6 +74,9 @@ text.nombre_del_hospital{
 .hexChart[selected=false]{
 	opacity:0.5;
 }
+.hexChart[selected=false] > path{
+	stroke:#ADADAD;
+}
 
 .xAxis, .yAxis{
 	stroke:#ADADAD;
