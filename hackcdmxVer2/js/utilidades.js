@@ -42,12 +42,12 @@ var mapHospitalesColorsByZonaNacimientos = d3.nest().key(function(d){ return d.i
 //utilidades
 var definidorDePosiciones = new DefinidorDePosiciones();
 
-var months = ["Ene","Feb",
-        "Mar","Abr",
-        "May","Jun",
-        "Jul","Ago",
-        "Sep","Oct",
-        "Nov","Dic"];
+var months = ["Enero","Febrero",
+        "Marzo","Abril",
+        "Mayo","Junio",
+        "Julio","Agosto",
+        "Septiembre","Octubre",
+        "Noviembre","Diciembre"];
 
 function getCategory(cat1, cat2, cat3, index, escala)
 {

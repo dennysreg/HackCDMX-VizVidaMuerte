@@ -131,7 +131,7 @@ function controlVisualizacion(){
           getHospitalsDataOfIds(
             hospitalesids,anio)));
 
-   //this.controladorC3LineChart.loadDataAllHospitales(anio);
+   this.controladorC3LineChart.reloadDataOnYearChange(anio);
   }  
 
   this.escuchoCambioDeDatosEnLineChart = function (categoria,groupid){
@@ -1011,8 +1011,9 @@ function GrupoDeBotones(){
 function ControladorC3LineChart(){
   var doms;
   var chart;
-
-  var pathscolors= 
+  var currentCategoria;
+  var currentgroupid;
+  var isShowingAllHospitals=true;
   this.initDOM = function(svg,w,h){
     //svg.append("g").attr("class","wrapper-linechart");
     //this.createChart(".wrapper-linechart",w,h);
@@ -1073,8 +1074,21 @@ function ControladorC3LineChart(){
     });
   }
 
+  this.reloadDataOnYearChange = function(anio){
+    if(isShowingAllHospitals){
+      this.loadDataAllHospitales(anio,currentCategoria);
+    }
+    else
+    {
+      this.loadDataHospitales(anio,currentCategoria,currentgroupid);
+    } 
+  }
+
   this.loadDataAllHospitales = function(anio,categoria){
-    
+
+    currentCategoria = categoria;
+    isShowingAllHospitals = true;
+
     this.loadData(
         this.createDataByID(hospitalesids,anio,"nacimientos"),
         [],
@@ -1104,6 +1118,10 @@ function ControladorC3LineChart(){
   }
 
   this.loadDataHospitales = function(anio,categoria,groupid){
+    currentCategoria = categoria;
+    currentgroupid = groupid;
+    isShowingAllHospitals = false;
+
     var mapHospitalsByCategory,unloadids;
     if(categoria == "Tipo"){
       mapHospitalsByCategory = mapHospitalesPorTipo;
