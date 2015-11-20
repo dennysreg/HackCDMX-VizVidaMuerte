@@ -9,7 +9,9 @@ var mapHospitalesPorZona = d3.nest().key(function(d){ return d.zona; }).sortKeys
 var hospitalesids = Object.keys(mapHospitales);
 
 
+
 var hospitales_arreglo = createObjectToArray(hospitales_datos);
+
 var hospitales_arreglo_2011 =hospitales_arreglo.map(
   function(obj){
     var rObj = {};
@@ -105,6 +107,38 @@ function createObjectToArray(myObject){
     }
   }
   return returnArray;
+}
+
+function getTotalNacimientosPorAnio(anio){
+
+  return hospitales_arreglo.map(function(d){
+          var datosHospitales = d.value[anio]; 
+          var total=0; 
+          for(var k in datosHospitales){ total += datosHospitales[k].nacimientos} 
+            return total;});
+}
+
+function getTotalNacimientosPorHospital(){
+  var returnArray = [];
+  
+  hospitalesids.forEach(function(id){
+    obj = {};
+    obj.id = id;
+    obj.y1 = getTotalNacimientos(id,2011);
+    obj.y2 = getTotalNacimientos(id,2012);
+    returnArray.push(obj);
+  })
+
+  return returnArray;
+}
+
+function getTotalNacimientos(id,anio){
+  var total=0;
+  var datos = hospitales_datos[id][anio];
+  for(var k in datos){
+    total += datos[k].nacimientos;
+  }
+  return total;
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // - - - - - - - - - - - - - - DEFINIDOR DE POSICIONES - - - - - -  - - - - - - - - -

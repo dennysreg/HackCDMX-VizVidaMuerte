@@ -31,6 +31,7 @@ function controlVisualizacion(){
   this.controladorGrupoHospitales;
   this.controladorLineChart;
   this.controladorC3LineChart;
+  this.controladorParallelChart;
 
   //controladores de eventos
   this.controlDelTiempo;
@@ -43,6 +44,7 @@ function controlVisualizacion(){
     this.controladorGrupoHospitales = new controladorGrupoHospitales();
     this.controladorLineChart = new ControladorLineChart();
     this.controladorC3LineChart = new ControladorC3LineChart;
+    this.controladorParallelChart = new ControladorParallelLines;
 
     this.controlDelTiempo = new ControlDelTiempo();
     this.controlDelTiempo.iniciaControlDelTiempo();
@@ -51,7 +53,12 @@ function controlVisualizacion(){
     this.centroDeControl.initCentroDeControl();
 
     this.controladorDeEscenas = new ControladorDeEscenas();
-    this.controladorDeEscenas.iniciaControl(this.controladorHospitales,this.controladorGrupoHospitales,this.controladorLineChart,this.controladorC3LineChart);
+    this.controladorDeEscenas.iniciaControl(
+      this.controladorHospitales,
+      this.controladorGrupoHospitales,
+      this.controladorLineChart,
+      this.controladorC3LineChart,
+      this.controladorParallelChart);
   }  
 
   //inicia los dom elementos secundarios
@@ -62,6 +69,7 @@ function controlVisualizacion(){
     
     //this.controladorLineChart.initDOM(this.svg);
     this.controladorC3LineChart.initDOM(this.svg,500,400);
+    this.controladorParallelChart.initDOM(this.svg,200,400);
   } 
 
   //crea los dos elementos principales de dibujo
@@ -100,6 +108,8 @@ function controlVisualizacion(){
 
     this.controladorHospitales.updateHexCharts(this.svg,2011,0);
     this.controladorHospitales.updateLineasContadoras(this.svg,2011,0);
+
+    this.controladorParallelChart.hideDOM();
     //this.controladorHospitales.controladorDeNombreDeHospitales.createNombresDeHospitales(this.svg);
   }
 
@@ -116,7 +126,10 @@ function controlVisualizacion(){
               this.controladorDeEscenas.setEscena2(
                 args[0],
                 this.controlDelTiempo.getCurrentAnio());
-              this.centroDeControl.enterBotonPorMes();
+              this.centroDeControl.enterBotonesEscena2();
+              break;
+      case 3: this.controladorDeEscenas.setEscena3();
+              this.centroDeControl.enterBotonesEscena3();
               break;
     }
   }
@@ -124,10 +137,9 @@ function controlVisualizacion(){
   //en esta parte controla los cambios ocurridos cuando cambia la fecha.
   this.escuchoCambioDeFecha = function(anio, mes)
   {
-    
-   this.controladorHospitales.updateHexCharts(this.svg,anio,mes);
-   this.controladorC3LineChart.reloadDataOnYearChange(anio);
-   this.controladorC3LineChart.setBlackXGrid(mes);
+     this.controladorHospitales.updateHexCharts(this.svg,anio,mes);
+     this.controladorC3LineChart.reloadDataOnYearChange(anio);
+     this.controladorC3LineChart.setBlackXGrid(mes);
   }  
 
   this.escuchoCambioDeDatosEnLineChart = function (categoria,groupid){
@@ -190,11 +202,12 @@ function ControladorDeEscenas(){
   //contiene el controlador de elementos visuales
   var controladorHospitales;
 
-  this.iniciaControl = function(_controladorHospitales,_controaldorGrupoHospitales,_controladorLineChart,_controladorC3linechart){
+  this.iniciaControl = function(_controladorHospitales,_controaldorGrupoHospitales,_controladorLineChart,_controladorC3linechart,_controladorParallelChart){
     controladorHospitales = _controladorHospitales;
     controladorGrupoHospitales = _controaldorGrupoHospitales;
     controladorLineChart = _controladorLineChart;
     controladorC3linechart = _controladorC3linechart;
+    controladorParallelChart = _controladorParallelChart;
   }
 
 
@@ -213,7 +226,7 @@ function ControladorDeEscenas(){
     controladorHospitales.controladorDeLineasContadoras.setLargoLinea(50);
     controladorHospitales.controladorDeLineasContadoras.hideLineasContadoras();
 
-   
+    
     //inserta los hospitales al wrapper-all-hospitals
     //el contador es para darle tiempo a que los otros 
     //g contenedores de hospitales regresen a la posición (0,0)
@@ -253,19 +266,16 @@ function ControladorDeEscenas(){
     controladorC3linechart.loadDataAllHospitales(anio,categoria);
     controladorC3linechart.showDom();
 
+    controladorParallelChart.hideDOM();
   }
 
 
-  //en la escena tres se muestran los datos acumulando por mes.
+  //en la escena tres se muestra un parallel chart comparando totales anuales
   this.setEscena3 = function(){
-    var circulos = d3.selectAll("#vivo");
-
-    circulos.transition().duration(1000).attr("transform", function(d) { 
-         return "translate(" + 0 + "," + 0 + ")"; });
-
-
+    controladorC3linechart.hideDom();
+    controladorParallelChart.showDOM();
+    controladorParallelChart.translateDOM(50,0);
   }
-
 }
 
 
@@ -517,10 +527,7 @@ function ControladorDeHexCharts(){
 
   this.initHexCharts = function ()
   {
-    hexbin = d3.hexbin();
-
-         
-    
+    hexbin = d3.hexbin();  
   }
 
   this.addBackHexagon = function(domHospital){
@@ -545,7 +552,6 @@ function ControladorDeHexCharts(){
   
     hospitales.forEach(function(hospital){
       
-
        //las estadisticas del hospital en el año y mes especifico
        //al ser un controlador tiene acceso directo  a los datos
       var mydata = hospitales_datos[hospital.id][anio][mes+1];
@@ -856,6 +862,7 @@ function ControladorNombresDeHospitales(){
       DOMsNombresHospitales[key].attr("display","none");
     }
   }
+
 }
 
 //Esta funcion es el centro de control para el usuario
@@ -927,16 +934,29 @@ function CentroDeControl(){
   }
 
   //Crea boton por mes
-  this.enterBotonPorMes = function(){
+  this.enterBotonesEscena2 = function(){
     //se eliminan botones previos que esten cargados en la vista
     this.botones.eliminaBotones();
 
     var botonesData = [{nombre:"Regresar",initial_px:200 ,initial_py:200 ,update_px:200 ,update_py:50 ,w:100, h:30, imgpath:"imgs/botones/Regresar_",args:[1,[]]},
-    {nombre:"verPorMes",initial_px:300 ,initial_py:300 ,update_px:400 ,update_py:50 ,w:100, h:30, imgpath:"imgs/botones/Regresar_",args:[1,[]]}];
+    {nombre:"verAnual",initial_px:300 ,initial_py:300 ,update_px:400 ,update_py:50 ,w:100, h:30, imgpath:"imgs/botones/Anual_",args:[3,[]]}];
   
     this.botones = new GrupoDeBotones();
     this.botones.setEventManager(this);
-    this.botones.enterBotones(this.groupDOM,"verPorMes",botonesData,this.fireEvent);
+    this.botones.enterBotones(this.groupDOM,"Anual_Regresar",botonesData,this.fireEvent);
+  }
+
+  this.enterBotonesEscena3 = function(){
+    this.botones.eliminaBotones();    
+
+
+    var botonesData = [{nombre:"Regresar",initial_px:200 ,initial_py:200 ,update_px:200 ,update_py:50 ,w:100, h:30, imgpath:"imgs/botones/Regresar_",args:[2,["Tipo"]]}];
+
+    this.botones = new GrupoDeBotones();
+    this.botones.setEventManager(this);
+    this.botones.enterBotones(this.groupDOM,"Botones-Escena3",botonesData,this.fireEvent);
+    
+  
   }
 
 
@@ -1005,7 +1025,96 @@ function GrupoDeBotones(){
 }
 
 function ControladorParallelLines(){
+  var parallelLine;
+  var dom;
+  this.initDOM = function(parentDOM,w,h){
+    dom = parentDOM.append("g").attr("class","group-doms");
+    parallelLine = new ParallelLines();
+    parallelLine.createDOM(dom,w,h);
 
+    parallelLine.createAxisWithDomains(
+      0,
+      Math.max(d3.max(getTotalNacimientosPorAnio(2011)),
+        d3.max(getTotalNacimientosPorAnio(2012)))
+    );
+    parallelLine.insertLinesChart(getTotalNacimientosPorHospital());
+  }
+
+  this.hideDOM = function(){
+    parallelLine.hideDOM();
+  }
+
+  this.showDOM = function(){
+    parallelLine.showDOM();
+  }
+  this.translateDOM = function(px,py){
+    dom.attr("transform","translate("+px+","+py+")");
+  }
+
+
+}
+
+function ParallelLines(){
+  var dom;
+  var w,h;
+  var y;
+  var yAxis;
+  var spaceBetween;
+  this.createDOM = function(parentDOM,_w,_h){
+    dom = parentDOM.append("g").attr("class","parallel-lines");
+    w = _w;
+    h = _h;
+
+    y = d3.scale.linear()
+    .range([h, 0]);
+
+    yAxis = d3.svg.axis()
+      .orient("right")
+      .innerTickSize(-5)
+      .outerTickSize(5)
+      .tickPadding(10);
+
+    spaceBetween = _w/2;
+  }
+
+
+  this.insertLinesChart = function(data){
+    var lines = dom.selectAll(".linea").data(data);
+
+    lines.enter().append("line")
+          .attr("class","linea")
+          .attr("id",function(d){return d.id})
+          .attr("x1",0)
+          .attr("y1",function(d){return y(d.y1);})
+          .attr("x2",200)
+          .attr("y2",function(d){return y(d.y2);});
+  }
+
+  this.createAxisWithDomains = function(min,max){
+    y.domain([min,max]);
+    yAxis.scale(y);
+
+    yAxis.orient("left");
+    var axis = dom.selectAll(".leftAxis").data([1]).enter().append("g")
+      .attr("class", "yAxis")
+      .attr("transform","translate(0,0)");
+    axis.transition().delay(800).call(yAxis);
+
+    yAxis.orient("right");
+
+    var axis = dom.selectAll(".leftAxis").data([1]).enter().append("g")
+      .attr("class", "yAxis")
+      .attr("transform","translate(200,0)");
+    axis.transition().delay(800).call(yAxis);
+  }
+
+   this.hideDOM = function(){
+    dom.attr("visibility","hidden");
+  }
+
+  this.showDOM = function(){
+    dom.attr("visibility","visible");
+  }
 }
 
 function ControladorC3LineChart(){
