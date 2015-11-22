@@ -3,6 +3,11 @@
 	stroke:black;
 }
 
+.linea
+{
+	stroke:black;
+}
+
 text.nombre_del_hospital{
 	    font-size: 6px;
 }
@@ -73,6 +78,9 @@ text.nombre_del_hospital{
 
 .hexChart[selected=false]{
 	opacity:0.5;
+}
+.hexChart[selected=false] > path{
+	stroke:#ADADAD;
 }
 
 .xAxis, .yAxis{

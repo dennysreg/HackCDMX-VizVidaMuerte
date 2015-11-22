@@ -31,6 +31,7 @@ function controlVisualizacion(){
   this.controladorGrupoHospitales;
   this.controladorLineChart;
   this.controladorC3LineChart;
+  this.controladorParallelChart;
 
   //controladores de eventos
   this.controlDelTiempo;
@@ -43,6 +44,7 @@ function controlVisualizacion(){
     this.controladorGrupoHospitales = new controladorGrupoHospitales();
     this.controladorLineChart = new ControladorLineChart();
     this.controladorC3LineChart = new ControladorC3LineChart;
+    this.controladorParallelChart = new ControladorParallelLines;
 
     this.controlDelTiempo = new ControlDelTiempo();
     this.controlDelTiempo.iniciaControlDelTiempo();
@@ -51,7 +53,12 @@ function controlVisualizacion(){
     this.centroDeControl.initCentroDeControl();
 
     this.controladorDeEscenas = new ControladorDeEscenas();
-    this.controladorDeEscenas.iniciaControl(this.controladorHospitales,this.controladorGrupoHospitales,this.controladorLineChart,this.controladorC3LineChart);
+    this.controladorDeEscenas.iniciaControl(
+      this.controladorHospitales,
+      this.controladorGrupoHospitales,
+      this.controladorLineChart,
+      this.controladorC3LineChart,
+      this.controladorParallelChart);
   }  
 
   //inicia los dom elementos secundarios
@@ -60,8 +67,9 @@ function controlVisualizacion(){
     this.controladorHospitales.initDOMsHospitales(this.svg);
     this.controladorGrupoHospitales.initDOM(this.svg);
     
-    this.controladorLineChart.initDOM(this.svg);
+    //this.controladorLineChart.initDOM(this.svg);
     this.controladorC3LineChart.initDOM(this.svg,500,400);
+    this.controladorParallelChart.initDOM(this.svg,200,400);
   } 
 
   //crea los dos elementos principales de dibujo
@@ -100,6 +108,8 @@ function controlVisualizacion(){
 
     this.controladorHospitales.updateHexCharts(this.svg,2011,0);
     this.controladorHospitales.updateLineasContadoras(this.svg,2011,0);
+
+    this.controladorParallelChart.hideDOM();
     //this.controladorHospitales.controladorDeNombreDeHospitales.createNombresDeHospitales(this.svg);
   }
 
@@ -116,7 +126,10 @@ function controlVisualizacion(){
               this.controladorDeEscenas.setEscena2(
                 args[0],
                 this.controlDelTiempo.getCurrentAnio());
-              this.centroDeControl.enterBotonPorMes();
+              this.centroDeControl.enterBotonesEscena2();
+              break;
+      case 3: this.controladorDeEscenas.setEscena3();
+              this.centroDeControl.enterBotonesEscena3();
               break;
     }
   }
@@ -124,21 +137,14 @@ function controlVisualizacion(){
   //en esta parte controla los cambios ocurridos cuando cambia la fecha.
   this.escuchoCambioDeFecha = function(anio, mes)
   {
-  
-   this.controladorHospitales.updateHexCharts(this.svg,anio,mes);
-   //this.controladorHospitales.updateLineasContadoras(this.svg,anio,mes); 
-   //this.controladorLineChart.updateLineChart( createObjectToArray( getHospitalsDataOfIds(hospitalesids,anio)));
 
-   this.controladorC3LineChart.reloadDataOnYearChange(anio);
+     this.controladorHospitales.updateHexCharts(this.svg,anio,mes);
+     this.controladorC3LineChart.reloadDataOnYearChange(anio);
+     this.controladorC3LineChart.setBlackXGrid(mes);
+
   }  
 
   this.escuchoCambioDeDatosEnLineChart = function (categoria,groupid){
-    
-   /* var mapHospitalsByCategory = categoria == "Tipo"? mapHospitalesPorTipo:mapHospitalesPorDelegacion;
-    this.controladorLineChart.updateLineChart( createObjectToArray(
-          getHospitalsDataOfIds(
-            mapHospitalsByCategory[groupid].map(function(d){return d.id}),this.controlDelTiempo.getCurrentAnio())));
-    */
     this.controladorC3LineChart.loadDataHospitales(this.controlDelTiempo.getCurrentAnio(),categoria,groupid);
   }
 
@@ -198,11 +204,12 @@ function ControladorDeEscenas(){
   //contiene el controlador de elementos visuales
   var controladorHospitales;
 
-  this.iniciaControl = function(_controladorHospitales,_controaldorGrupoHospitales,_controladorLineChart,_controladorC3linechart){
+  this.iniciaControl = function(_controladorHospitales,_controaldorGrupoHospitales,_controladorLineChart,_controladorC3linechart,_controladorParallelChart){
     controladorHospitales = _controladorHospitales;
     controladorGrupoHospitales = _controaldorGrupoHospitales;
     controladorLineChart = _controladorLineChart;
     controladorC3linechart = _controladorC3linechart;
+    controladorParallelChart = _controladorParallelChart;
   }
 
 
@@ -221,8 +228,7 @@ function ControladorDeEscenas(){
     controladorHospitales.controladorDeLineasContadoras.setLargoLinea(50);
     controladorHospitales.controladorDeLineasContadoras.hideLineasContadoras();
 
-   controladorLineChart.hideLineDom(1);
-   controladorLineChart.setVisible(false);
+    
     //inserta los hospitales al wrapper-all-hospitals
     //el contador es para darle tiempo a que los otros 
     //g contenedores de hospitales regresen a la posición (0,0)
@@ -235,6 +241,8 @@ function ControladorDeEscenas(){
     //pon los hospitales en grid
     controladorHospitales.setPosicionDeDOMSHospitales(definidorDePosiciones.generaPanal(40,300,150,hospitalesids));
     controladorGrupoHospitales.setPosicionToAllDOMSGrupos(0,0);
+    controladorHospitales.resetListeners();
+    controladorHospitales.resetHospitalUI();
     //controladorHospitales.addTooltipListeners();
     controladorC3linechart.hideDom();
   }
@@ -252,10 +260,6 @@ function ControladorDeEscenas(){
     controladorGrupoHospitales.setPosicionToAllDOMSGrupos(450,0);
     //controladorGrupoHospitales.showLineCharts(categoria);
     
-    
-    controladorLineChart.translateLineDom(50,100);
-    //controladorLineChart.showLineDom(800);
-    
     controladorHospitales.setPosicionDeDOMSHospitales(definidorDePosiciones.generaPanalPorTipo(categoria,hospitalesPorTipo));
 
     controladorHospitales.addChangeOpacityListeners(categoria);
@@ -265,19 +269,16 @@ function ControladorDeEscenas(){
     controladorC3linechart.loadParallelLinesAllHospitalsData(categoria);
     controladorC3linechart.showDom();
 
+    controladorParallelChart.hideDOM();
   }
 
 
-  //en la escena tres se muestran los datos acumulando por mes.
+  //en la escena tres se muestra un parallel chart comparando totales anuales
   this.setEscena3 = function(){
-    var circulos = d3.selectAll("#vivo");
-
-    circulos.transition().duration(1000).attr("transform", function(d) { 
-         return "translate(" + 0 + "," + 0 + ")"; });
-
-
+    controladorC3linechart.hideDom();
+    controladorParallelChart.showDOM();
+    controladorParallelChart.translateDOM(50,0);
   }
-
 }
 
 
@@ -369,14 +370,22 @@ function ControladorHospitales(){
     }
   }
 
-  this.removeChangeOpacityListeners = function(){
+  this.resetListeners = function(){
     for(var id in DOMsHospitales){
-      
       DOMsHospitales[id]
-      .on("mouseenter",function(d){})
-      .on("mouseover",function(d){})
-      .on("mouseout",function(d){});
+      .on("mouseenter",null)
+      .on("mouseover",null)
+      .on("mouseout",null)
+      .on("click",null);
     }
+  }
+
+  this.resetHospitalUI = function(){
+    hospitales.forEach(function(d){
+        DOMsHexCharts[d.id]
+          .attr("selected",null)
+          .attr("opacity",1);
+    });   
   }
 
   this.addTooltipListeners = function(){
@@ -421,7 +430,7 @@ function ControladorHospitales(){
       
       DOMsHospitales[id]
       .on("click",function(d){
-       
+
         //mark selected group
          var hospitaldata = mapHospitales[this.id][0];
 
@@ -521,10 +530,7 @@ function ControladorDeHexCharts(){
 
   this.initHexCharts = function ()
   {
-    hexbin = d3.hexbin();
-
-         
-    
+    hexbin = d3.hexbin();  
   }
 
   this.addBackHexagon = function(domHospital){
@@ -548,7 +554,7 @@ function ControladorDeHexCharts(){
     addBackHexagonfunction = this.addBackHexagon;
   
     hospitales.forEach(function(hospital){
-     
+      
        //las estadisticas del hospital en el año y mes especifico
        //al ser un controlador tiene acceso directo  a los datos
       var mydata = hospitales_datos[hospital.id][anio][mes+1];
@@ -603,17 +609,12 @@ function ControladorDeHexCharts(){
       //tricky: con el slice omitimos el nodo padre, que aparece en el centro :) !!
        var data_bubble = bubble.nodes(classes(nodes)).slice(1);  
 
-       //hay cosos en la data que no hay ningun nodo.
-       //son casos que la recopilación de datos debe estar mal
-       if(nodes["children"].length==0){ return;}
-
-      //tomo el dom element del grupo para el hex del hospital
+       //tomo el dom element del grupo para el hex del hospital
        var domHospital = DOMsHexCharts[hospital.id];
      
-        domHospital.attr("transform","translate(0,20)");
        addBackHexagonfunction(domHospital);
-
-       domHospital.on("mouseover",function(d){
+       
+        domHospital.on("mouseover",function(d){
         
             var thisrow =rows[this.id];
             var rect = this.getBoundingClientRect();
@@ -634,6 +635,14 @@ function ControladorDeHexCharts(){
                 div.transition()        
                 .duration(500)      
                 .style("opacity", 0)})
+
+       //hay cosos en la data que no hay ningun nodo.
+       //son casos que la recopilación de datos debe estar mal
+       if(nodes["children"].length==0){ return;}
+
+      
+
+      
       // domHospital.attr("transform","translate(" + 0 + "," + 20+ ")");
        //selecciono sólo los circulos del hospital correspondiente
        //porque el domHospital es el DOM especifico de ese hospital
@@ -656,9 +665,7 @@ function ControladorDeHexCharts(){
         .attr("r", bubble_radius)
         .transition()
             .duration(delay)            
-            //.style("fill",function(d,i){ return d.estado=="vivo" ?  d.color : codeColors['muerto']})        
-            .style("opacity",1.0)            
-            //.style("stroke-width", 0.5)
+            .style("opacity",1.0)           
             .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; })
 
        bubbleHospital
@@ -745,7 +752,7 @@ function ControladorDeHexCharts(){
       //sacamos el valor de defunciones porque no va a ser un circulo.
       if(mydata.hasOwnProperty("defunciones")){
         var totalDefunciones = mydata["defunciones"];
-        delete mydata["defunciones"];  
+        //delete mydata["defunciones"];  
 
         //aqui agregamos el elemento para las defunciones     
         marcadores = domLinea.selectAll(".defunciones").data([totalDefunciones]);
@@ -858,6 +865,7 @@ function ControladorNombresDeHospitales(){
       DOMsNombresHospitales[key].attr("display","none");
     }
   }
+
 }
 
 //Esta funcion es el centro de control para el usuario
@@ -929,16 +937,29 @@ function CentroDeControl(){
   }
 
   //Crea boton por mes
-  this.enterBotonPorMes = function(){
+  this.enterBotonesEscena2 = function(){
     //se eliminan botones previos que esten cargados en la vista
     this.botones.eliminaBotones();
 
     var botonesData = [{nombre:"Regresar",initial_px:200 ,initial_py:200 ,update_px:200 ,update_py:50 ,w:100, h:30, imgpath:"imgs/botones/Regresar_",args:[1,[]]},
-    {nombre:"verPorMes",initial_px:300 ,initial_py:300 ,update_px:400 ,update_py:50 ,w:100, h:30, imgpath:"imgs/botones/Regresar_",args:[1,[]]}];
+    {nombre:"verAnual",initial_px:300 ,initial_py:300 ,update_px:400 ,update_py:50 ,w:100, h:30, imgpath:"imgs/botones/Anual_",args:[3,[]]}];
   
     this.botones = new GrupoDeBotones();
     this.botones.setEventManager(this);
-    this.botones.enterBotones(this.groupDOM,"verPorMes",botonesData,this.fireEvent);
+    this.botones.enterBotones(this.groupDOM,"Anual_Regresar",botonesData,this.fireEvent);
+  }
+
+  this.enterBotonesEscena3 = function(){
+    this.botones.eliminaBotones();    
+
+
+    var botonesData = [{nombre:"Regresar",initial_px:200 ,initial_py:200 ,update_px:200 ,update_py:50 ,w:100, h:30, imgpath:"imgs/botones/Regresar_",args:[2,["Tipo"]]}];
+
+    this.botones = new GrupoDeBotones();
+    this.botones.setEventManager(this);
+    this.botones.enterBotones(this.groupDOM,"Botones-Escena3",botonesData,this.fireEvent);
+    
+  
   }
 
 
@@ -1006,6 +1027,98 @@ function GrupoDeBotones(){
   }
 }
 
+function ControladorParallelLines(){
+  var parallelLine;
+  var dom;
+  this.initDOM = function(parentDOM,w,h){
+    dom = parentDOM.append("g").attr("class","group-doms");
+    parallelLine = new ParallelLines();
+    parallelLine.createDOM(dom,w,h);
+
+    parallelLine.createAxisWithDomains(
+      0,
+      Math.max(d3.max(getTotalNacimientosPorAnio(2011)),
+        d3.max(getTotalNacimientosPorAnio(2012)))
+    );
+    parallelLine.insertLinesChart(getTotalNacimientosPorHospital());
+  }
+
+  this.hideDOM = function(){
+    parallelLine.hideDOM();
+  }
+
+  this.showDOM = function(){
+    parallelLine.showDOM();
+  }
+  this.translateDOM = function(px,py){
+    dom.attr("transform","translate("+px+","+py+")");
+  }
+
+
+}
+
+function ParallelLines(){
+  var dom;
+  var w,h;
+  var y;
+  var yAxis;
+  var spaceBetween;
+  this.createDOM = function(parentDOM,_w,_h){
+    dom = parentDOM.append("g").attr("class","parallel-lines");
+    w = _w;
+    h = _h;
+
+    y = d3.scale.linear()
+    .range([h, 0]);
+
+    yAxis = d3.svg.axis()
+      .orient("right")
+      .innerTickSize(-5)
+      .outerTickSize(5)
+      .tickPadding(10);
+
+    spaceBetween = _w/2;
+  }
+
+
+  this.insertLinesChart = function(data){
+    var lines = dom.selectAll(".linea").data(data);
+
+    lines.enter().append("line")
+          .attr("class","linea")
+          .attr("id",function(d){return d.id})
+          .attr("x1",0)
+          .attr("y1",function(d){return y(d.y1);})
+          .attr("x2",200)
+          .attr("y2",function(d){return y(d.y2);});
+  }
+
+  this.createAxisWithDomains = function(min,max){
+    y.domain([min,max]);
+    yAxis.scale(y);
+
+    yAxis.orient("left");
+    var axis = dom.selectAll(".leftAxis").data([1]).enter().append("g")
+      .attr("class", "yAxis")
+      .attr("transform","translate(0,0)");
+    axis.transition().delay(800).call(yAxis);
+
+    yAxis.orient("right");
+
+    var axis = dom.selectAll(".leftAxis").data([1]).enter().append("g")
+      .attr("class", "yAxis")
+      .attr("transform","translate(200,0)");
+    axis.transition().delay(800).call(yAxis);
+  }
+
+   this.hideDOM = function(){
+    dom.attr("visibility","hidden");
+  }
+
+  this.showDOM = function(){
+    dom.attr("visibility","visible");
+  }
+}
 
 function ControladorC3LineChart(){
   var doms;
@@ -1073,7 +1186,8 @@ function ControladorC3LineChart(){
           return text + "</table>";
       },
                      grouped: false },
-      transition: { duration: 800}
+      transition: { duration: 800},
+       grid: {x: {show: true},y: {show: true}}
     });
   }
 
@@ -1180,6 +1294,7 @@ function ControladorC3LineChart(){
     });
   }
 
+
   this.loadYearData = function(_loadData,unloadData,categoria)
   {
     var loadData =  [['x', '01', '02', '03', '04', '05', '06', '07','08', '09', '10', '11', '12']];
@@ -1220,6 +1335,12 @@ function ControladorC3LineChart(){
     return categoria=="Tipo" ? mapHospitalesColorsByTipoNacimientos : mapHospitalesColorsByZonaNacimientos;
   }
 
+
+  this.setBlackXGrid = function(num){
+    $(".c3-xgrids > line").attr("stroke-width","1px");
+    $(".c3-xgrids :nth-child("+num+")")
+      .attr("stroke-width","2px");
+  }
 
 }
 
