@@ -377,4 +377,10 @@ Array.max = function( array ){
     return Math.max.apply( Math, array );
 };
 
-//-----OBJECT------------
+//-----C3------------
+c3.chart.fn.axis.show_y2 = function (shown) {
+    var $$ = this.internal, config = $$.config;
+    config.axis_y2_show = !!shown;
+    $$.axes.y2.style("visibility", config.axis_y2_show ? 'visible' : 'hidden');
+    $$.redraw();
+};

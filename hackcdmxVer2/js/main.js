@@ -124,7 +124,7 @@ function controlVisualizacion(){
   //en esta parte controla los cambios ocurridos cuando cambia la fecha.
   this.escuchoCambioDeFecha = function(anio, mes)
   {
-    debugger;
+  
    this.controladorHospitales.updateHexCharts(this.svg,anio,mes);
    //this.controladorHospitales.updateLineasContadoras(this.svg,anio,mes); 
    //this.controladorLineChart.updateLineChart( createObjectToArray( getHospitalsDataOfIds(hospitalesids,anio)));
@@ -261,7 +261,8 @@ function ControladorDeEscenas(){
     controladorHospitales.addChangeOpacityListeners(categoria);
     controladorHospitales.addSelectGroupListeners(categoria);
 
-    controladorC3linechart.loadDataAllHospitales(anio,categoria);
+    //controladorC3linechart.loadDataAllHospitales(anio,categoria);
+    controladorC3linechart.loadParallelLinesAllHospitalsData(categoria);
     controladorC3linechart.showDom();
 
   }
@@ -420,7 +421,7 @@ function ControladorHospitales(){
       
       DOMsHospitales[id]
       .on("click",function(d){
-          debugger;
+       
         //mark selected group
          var hospitaldata = mapHospitales[this.id][0];
 
@@ -1039,7 +1040,11 @@ function ControladorC3LineChart(){
           type: 'timeseries',
           tick: {format: '%m'}
         }},
-
+        axes: {
+            data1: 'y',
+            data2: 'y2'
+        },
+       
        legend: { show: false},
       tooltip: {     format: {title: function (d) {  return months[d]}} ,   
                     contents: function (d, defaultTitleFormat, defaultValueFormat, color) {
@@ -1083,16 +1088,14 @@ function ControladorC3LineChart(){
   }
 
   this.loadDataAllHospitales = function(anio,categoria){
-
     currentCategoria = categoria;
     isShowingAllHospitals = true;
 
-    this.loadData(
+    this.loadYearData(
         this.createDataByID(hospitalesids,anio,"nacimientos"),
         [],
         categoria
       );
-    
   }
 
   this.createDataByID = function(ids,anio,attributename){
@@ -1100,7 +1103,7 @@ function ControladorC3LineChart(){
     var hospitalData=[];
     var val;
     for(var i = 0;i<ids.length;i++){
-      //mapHospitales[ids[i]][0].Nombre
+      
       hospitalData=[ids[i]+"_"+attributename];
       for(var j= 1;j<13;j++)
       {
@@ -1110,6 +1113,32 @@ function ControladorC3LineChart(){
         }
         hospitalData.push(val);
       }
+      returnArray.push(hospitalData);
+    }
+     
+    return returnArray;
+  }
+
+  this.createParallelLinesDataByID = function(ids,attributename)
+  {
+    var returnArray=[];
+    var hospitalData=[];
+
+    var year2011 = this.createDataByID(ids,2011,attributename);
+    var year2012 = this.createDataByID(ids,2012,attributename);
+
+    var val1,val2;
+    for(var i=0; i<ids.length;i++)
+    {
+      val1=0;val2=0;
+      hospitalData=[ids[i]+"_"+attributename];
+      for(var j= 1;j<13;j++)
+      {
+        val1 += year2011[i][j];
+        val2 += year2012[i][j];
+      }
+      hospitalData.push(val1);
+      hospitalData.push(val2);
       returnArray.push(hospitalData);
     }
     return returnArray;
@@ -1123,33 +1152,74 @@ function ControladorC3LineChart(){
     var mapHospitalsByCategory,unloadids;
     if(categoria == "Tipo"){
       mapHospitalsByCategory = mapHospitalesPorTipo;
-      unloadids = hospitalesids.filter(function(d){ return mapHospitales[d].subtipo != groupid;});
+      unloadids = hospitalesids.filter(function(d){ return mapHospitales[d][0].subtipo != groupid;});
     }else{
       mapHospitalsByCategory = mapHospitalesPorZona;
-      unloadids = hospitalesids.filter(function(d){ return mapHospitales[d].delegacion != groupid;});
+      unloadids = hospitalesids.filter(function(d){ return mapHospitales[d][0].delegacion != groupid;});
     }
+
+  
     
    unloadids = unloadids.map(function(d){return d+"_nacimientos";});
-
-    this.loadData(
+   
+    this.loadYearData(
       this.createDataByID(mapHospitalsByCategory[groupid].map(function(d){return d.id}),anio,"nacimientos"),
       unloadids,
       categoria
     );
+
   }
 
-  this.loadData = function(_loadData,unloadData,categoria){
-
-    var arregloColores = categoria=="Tipo" ? mapHospitalesColorsByTipoNacimientos : mapHospitalesColorsByZonaNacimientos;
- 
-    var loadData =  [['x', '01', '02', '03', '04', '05', '06', '07','08', '09', '10', '11', '12']];
-    loadData = loadData.concat(_loadData);
+  this.loadData = function(loadData,unloadData,categoria)
+  {
+    var arregloColores = this.selectColorArray(categoria);
     chart.load({
         columns: loadData,
         unload: unloadData,
         colors: arregloColores  
     });
   }
+
+  this.loadYearData = function(_loadData,unloadData,categoria)
+  {
+    var loadData =  [['x', '01', '02', '03', '04', '05', '06', '07','08', '09', '10', '11', '12']];
+    loadData = loadData.concat(_loadData);    
+
+    this.loadData(loadData,unloadData,categoria);
+
+
+    //hide the y2 of second parallel line.
+    chart.axis.show_y2(false);
+     
+  }
+
+  this.loadParallelYears = function(_loadData,unloadData,categoria)
+  {
+    var loadData =  [['x', '2011', '2012']];
+    loadData = loadData.concat(_loadData);    
+
+    this.loadData(loadData,unloadData,categoria);
+
+    //show the y2 of second parallel line.
+    chart.axis.show_y2(true);
+  }
+
+  this.loadParallelLinesAllHospitalsData = function(categoria)
+  {
+    currentCategoria = categoria;
+    isShowingAllHospitals = true;
+
+    this.loadParallelYears(
+        this.createParallelLinesDataByID(hospitalesids,"nacimientos"),
+        [],
+        categoria
+      );
+  }
+
+  this.selectColorArray = function(categoria){
+    return categoria=="Tipo" ? mapHospitalesColorsByTipoNacimientos : mapHospitalesColorsByZonaNacimientos;
+  }
+
 
 }
 
