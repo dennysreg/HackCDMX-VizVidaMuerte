@@ -145,8 +145,13 @@ function controlVisualizacion(){
   }  
 
   this.escuchoCambioDeDatosEnLineChart = function (categoria,groupid){
-    this.controladorC3LineChart.loadDataHospitales(this.controlDelTiempo.getCurrentAnio(),categoria,groupid);
+    if(groupid === 'undefined'){
+      this.controladorC3lineChart.loadDataAllHospitales(this.controlDelTiempo.getCurrentAnio(),categoria);
+    }else{
+      this.controladorC3LineChart.loadDataHospitales(this.controlDelTiempo.getCurrentAnio(),categoria,groupid);  
+    } 
   }
+
 
 }
 
@@ -203,6 +208,7 @@ function ControlDelTiempo()
 function ControladorDeEscenas(){
   //contiene el controlador de elementos visuales
   var controladorHospitales;
+  var currentCategoria;
 
   this.iniciaControl = function(_controladorHospitales,_controaldorGrupoHospitales,_controladorLineChart,_controladorC3linechart,_controladorParallelChart){
     controladorHospitales = _controladorHospitales;
@@ -249,7 +255,8 @@ function ControladorDeEscenas(){
 
   //en la escena dos se ordenan los hospitales por delegacion o por tipo de hospital
   this.setEscena2 = function(categoria,anio){
-    
+    currentCategoria = categoria;
+
     var hospitalesPorTipo = categoria=="Tipo" ? mapHospitalesPorTipo : mapHospitalesPorZona; 
     
     //controladorHospitales.setPosicionDeDOMSHospitales(definidorDePosiciones.generaClustersDePosicionesPorTipo(0,0,800,400,80,150,arregloPorTipo,50));
@@ -265,8 +272,7 @@ function ControladorDeEscenas(){
     controladorHospitales.addChangeOpacityListeners(categoria);
     controladorHospitales.addSelectGroupListeners(categoria);
 
-    //controladorC3linechart.loadDataAllHospitales(anio,categoria);
-    controladorC3linechart.loadParallelLinesAllHospitalsData(categoria);
+    controladorC3linechart.loadDataAllHospitales(anio,categoria);
     controladorC3linechart.showDom();
 
     controladorParallelChart.hideDOM();
@@ -275,9 +281,10 @@ function ControladorDeEscenas(){
 
   //en la escena tres se muestra un parallel chart comparando totales anuales
   this.setEscena3 = function(){
-    controladorC3linechart.hideDom();
-    controladorParallelChart.showDOM();
-    controladorParallelChart.translateDOM(50,0);
+    controladorHospitales.resetListeners();
+    controladorHospitales.addChangeOpacityListeners(currentCategoria);
+
+    controladorC3linechart.loadParallelLinesAllHospitalsData(currentCategoria);
   }
 }
 
@@ -295,6 +302,8 @@ function ControladorHospitales(){
   var DOMsLeyendas = {};
   var grupoHospitales;
   var currentCategoria;
+  var isSelectedGroup=false;
+
   this.controladorDeHexCharts = new ControladorDeHexCharts();
   this.controladorDeLineasContadoras = new ControladorDeLineasContadoras();
   this.controladorDeNombreDeHospitales = new ControladorNombresDeHospitales();
@@ -423,14 +432,14 @@ function ControladorHospitales(){
   }
 
   this.addSelectGroupListeners = function(categoria){
-
     currentCategoria = categoria;
+    isSelectedGroup = false;
     var porTipo = currentCategoria =="Tipo"? "subtipo":"zona"
     for(var id in DOMsHospitales){
       
       DOMsHospitales[id]
       .on("click",function(d){
-
+        isSelectedGroup=true;
         //mark selected group
          var hospitaldata = mapHospitales[this.id][0];
 
@@ -439,12 +448,14 @@ function ControladorHospitales(){
 
           hospitales.filter(function(d){return d[porTipo]==hospitaldata[porTipo]}).forEach(function(d){
          
+         //mark selected hexcharts, and unselected hexcharts
             DOMsHexCharts[d.id].attr("selected","true");
             $(".linechart > path[hospitalid='"+d.id+"'] ").attr("mouse",null).attr("selected","true");
             });
           hospitales.filter(function(d){return d[porTipo]!=hospitaldata[porTipo]}).forEach(function(d){
             DOMsHexCharts[d.id].attr("selected","false");
             });          
+            
       })
     
   }
@@ -454,10 +465,12 @@ function ControladorHospitales(){
     currentCategoria = categoria;
     for(var id in DOMsHospitales){
       
+
       DOMsHospitales[id]
       .on("mouseenter",mouseEnterToHospital)
       .on("mouseover",mouseEnterToHospital)
       .on("mouseout",mouseOutOfHospital);
+    
     }
   }
 
@@ -465,7 +478,17 @@ function ControladorHospitales(){
 
     var hospitaldata = mapHospitales[this.id][0];
     var porTipo = currentCategoria =="Tipo"? "subtipo":"zona"
-    
+    //acciones cuando un grupo esta seleccionado
+    if(isSelectedGroup){
+      hospitales.filter(function(d){return d[porTipo]==hospitaldata[porTipo]}).forEach(function(d){
+        DOMsHexCharts[d.id].attr("mouse","enter");
+       });
+      d3.select(".c3-lines-"+hospitaldata.id+"-nacimientos >path").style("stroke-width","2px");
+    }
+
+    //acciones cuando no hay grupo seleccionado
+    else
+    {
       //$("#"+hospitaldata.subtipo.replace(/[^\w\*]/g,'')+".lineChart > [hospitalid='"+hospitaldata.id+"'] > path").
        //difuna elementos no selecicionados
        hospitales.filter(function(d){return d[porTipo]!=hospitaldata[porTipo]}).forEach(function(d){
@@ -475,21 +498,25 @@ function ControladorHospitales(){
        //remarca elementos en el grupo
        hospitales.filter(function(d){return d[porTipo]==hospitaldata[porTipo]}).forEach(function(d){
         DOMsHexCharts[d.id].attr("opacity",0.9);
-        
        });
         d3.select(".c3-lines-"+hospitaldata.id+"-nacimientos >path").style("stroke-width","2px");
 
-    DOMsHexCharts[this.id].attr("opacity",1);
+      DOMsHexCharts[this.id].attr("opacity",1);
+    }
+      
   }
 
   function mouseOutOfHospital(d){
     var hospitaldata = mapHospitales[this.id][0];
-    
-     hospitales.forEach(function(d){
+   
+      hospitales.forEach(function(d){
         DOMsHexCharts[d.id].attr("opacity",1);
+        DOMsHexCharts[d.id].attr("mouse","out");
         $(".c3-lines-"+d.id+"-nacimientos").attr("opacity","1");
         d3.select(".c3-lines-"+d.id+"-nacimientos >path").style("stroke-width","1px");
        });
+    
+     
   }
 
   
@@ -1204,6 +1231,7 @@ function ControladorC3LineChart(){
   this.loadDataAllHospitales = function(anio,categoria){
     currentCategoria = categoria;
     isShowingAllHospitals = true;
+  
 
     this.loadYearData(
         this.createDataByID(hospitalesids,anio,"nacimientos"),
@@ -1337,6 +1365,9 @@ function ControladorC3LineChart(){
 
 
   this.setBlackXGrid = function(num){
+    //the count start on 2.
+    num++;
+
     $(".c3-xgrids > line").attr("stroke-width","1px");
     $(".c3-xgrids :nth-child("+num+")")
       .attr("stroke-width","2px");
